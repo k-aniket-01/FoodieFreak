@@ -1,0 +1,57 @@
+<!-- core/templates/core/header.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>{% block title %}FoodieFreak{% endblock %}</title>
+    <style>
+        /* Internal CSS for header */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0; padding: 0;
+            background-color: #f4f6f8;
+            color: #333;
+        }
+        header {
+            background-color: #007bff;
+            color: white;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        header h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        nav a {
+            color: white;
+            text-decoration: none;
+            margin-left: 20px;
+            font-weight: 600;
+            transition: color 0.3s;
+        }
+        nav a:hover {
+            color: #d1e9ff;
+        }
+        .user-info {
+            font-weight: 500;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+<header>
+    <h1>FoodieFreak</h1>
+    <nav>
+        {% if user.is_authenticated %}
+            <span class="user-info">Welcome, {{ user.username }}!</span>
+            <a href="{% url 'logout' %}">Logout</a>
+        {% else %}
+            <a href="{% url 'login' %}">Login</a>
+            <a href="{% url 'register' %}">Register</a>
+        {% endif %}
+    </nav>
+</header>
+<main style="padding: 20px;">
