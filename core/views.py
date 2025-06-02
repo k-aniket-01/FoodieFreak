@@ -63,3 +63,31 @@ def owner_dashboard(request):
     if request.user.profile.role != 'owner':
         return HttpResponseForbidden("You are not authorized to access this page.")
     return render(request, 'owner_dashboard.html')
+
+
+from .models import FoodItem
+from django.contrib.auth.decorators import login_required
+
+@login_required
+def food_item_list(request):
+    if request.user.profile.role != 'owner':
+        return redirect('home')
+    items = FoodItem.objects.filter(owner=request.user)
+    return render(request, 'owner/food_item_list.html', {'items': items})
+
+
+# core/views.py
+from .forms import FoodItemForm
+
+@login_required
+def add_food_item(request):
+    if request.method == 'POST':
+        form = FoodItemForm(request.POST)
+        if form.is_valid():
+            food_item = form.save(commit=False)
+            food_item.owner = request.user
+            food_item.save()
+            return redirect('food_item_list')
+    else:
+        form = FoodItemForm()
+    return render(request, 'add_food_item.html', {'form': form})

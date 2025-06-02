@@ -1,7 +1,27 @@
 {% include 'core/header.html' %}
+<style>
+    .dashboard-links {
+        margin-top: 20px;
+    }
+    .dashboard-btn {
+        padding: 10px 20px;
+        background-color: #28a745;
+        color: white;
+        text-decoration: none;
+        border-radius: 5px;
+        font-weight: bold;
+    }
+    .dashboard-btn:hover {
+        background-color: #218838;
+    }
+</style>
+
 
 <h2>Owner Dashboard</h2>
 <p>Manage your canteen effectively from here.</p>
+<div class="dashboard-links">
+    <a href="{% url 'food_item_list' %}" class="dashboard-btn">Manage Food Items</a>
+</div>
 
 <section style="background: white; padding: 20px; border-radius: 6px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); max-width: 600px;">
     <h3>Owner Options</h3>

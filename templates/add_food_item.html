@@ -1,0 +1,13 @@
+{% include 'header.html' %}
+
+<h2 style="margin-top: 30px;">Add New Food Item</h2>
+
+<form method="post" style="margin-top: 20px;">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Add Item</button>
+</form>
+
+<a href="{% url 'food_item_list' %}" style="display: inline-block; margin-top: 20px;">Back to List</a>
+
+{% include 'footer.html' %}
