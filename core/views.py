@@ -5,6 +5,7 @@ from .models import Profile
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseForbidden
 from datetime import datetime 
+import random
 
 def current_year(request):
     return {'current_year': datetime.now().year}
