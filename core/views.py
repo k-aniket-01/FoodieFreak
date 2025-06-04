@@ -92,3 +92,9 @@ def add_food_item(request):
     else:
         form = FoodItemForm()
     return render(request, 'add_food_item.html', {'form': form})
+
+
+
+
+
+

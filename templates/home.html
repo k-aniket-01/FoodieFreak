@@ -1,6 +1,116 @@
 {% extends 'base.html' %}
 {% block title %}Home{% endblock %}
 {% block content %}
-<h2>Welcome to FoodieFreak!</h2>
-<p>This is the homepage.</p>
+
+<style>
+  .homepage-container {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    padding: 2rem;
+    background-color: #f8f9fa;
+  }
+
+  .welcome-section {
+    text-align: center;
+    margin-bottom: 3rem;
+  }
+
+  .welcome-section img {
+    width: 100%;
+    max-height: 400px;
+    object-fit: cover;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  .welcome-section .cta-button {
+    margin-top: 1.5rem;
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    color: #fff;
+    background-color: #e74c3c;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+  }
+
+  .welcome-section .cta-button:hover {
+    background-color: #c0392b;
+  }
+
+  .features-section {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+    gap: 2rem;
+  }
+
+  .feature-card {
+    flex: 1 1 300px;
+    background-color: #ffffff;
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    transition: transform 0.2s;
+  }
+
+  .feature-card:hover {
+    transform: translateY(-5px);
+  }
+
+  .feature-card img {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+  }
+
+  .feature-card h3 {
+    margin-top: 0;
+    color: #343a40;
+  }
+
+  .feature-card p {
+    color: #555;
+  }
+
+  @media (max-width: 768px) {
+    .features-section {
+      flex-direction: column;
+      align-items: center;
+    }
+  }
+</style>
+
+<div class="homepage-container">
+  <div class="welcome-section">
+    <h2>Welcome to <span style="color: #e74c3c;">FoodieFreak!</span></h2>
+    <p>Revolutionizing canteen experiences — order smart, skip the line, and eat fresh.</p>
+    <img src="static/image.jpg" alt="Canteen Banner">
+    <a href="{% url 'login' %}" class="cta-button">Get Started</a>
+  </div>
+
+  <div class="features-section">
+    <div class="feature-card">
+      <img src="static/image.jpg" alt="Smart Ordering">
+      <h3>Smart Ordering</h3>
+      <p>Order your food directly from your table. No more standing in long queues!</p>
+    </div>
+    <div class="feature-card">
+      <img src="static/image.jpg" alt="Real-time Updates">
+      <h3>Real-time Updates</h3>
+      <p>Get notified when your order is ready — pick up and enjoy fresh food instantly.</p>
+    </div>
+    <div class="feature-card">
+      <img src="static/image.jpg" alt="Easy Management">
+      <h3>Easy Management</h3>
+      <p>Canteen owners can track, manage, and fulfill orders from a dedicated dashboard.</p>
+    </div>
+  </div>
+</div>
+
 {% endblock %}
