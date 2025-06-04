@@ -1,57 +1,129 @@
 <!-- core/templates/core/header.html -->
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
     <title>{% block title %}FoodieFreak{% endblock %}</title>
     <style>
-        /* Internal CSS for header */
+        /* Reset and common styles */
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0; padding: 0;
             background-color: #f4f6f8;
             color: #333;
         }
         header {
-            background-color: #007bff;
-            color: white;
             padding: 15px 30px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
         header h1 {
             margin: 0;
-            font-size: 24px;
-            font-weight: bold;
+            font-size: 26px;
+            font-weight: 700;
+            cursor: default;
         }
         nav a {
-            color: white;
             text-decoration: none;
             margin-left: 20px;
             font-weight: 600;
-            transition: color 0.3s;
+            transition: color 0.3s ease;
+            font-size: 15px;
         }
         nav a:hover {
-            color: #d1e9ff;
+            opacity: 0.8;
         }
         .user-info {
             font-weight: 500;
             font-size: 14px;
+            margin-right: 15px;
+            white-space: nowrap;
+        }
+
+        /* Owner header styles - green theme */
+        header.owner {
+            background-color: #28a745;
+            color: white;
+        }
+        header.owner nav a {
+            color: white;
+        }
+        header.owner nav a:hover {
+            color: #d4f5d4;
+        }
+
+        /* Customer header styles - orange theme */
+        header.customer {
+            background-color: #fd7e14;
+            color: white;
+        }
+        header.customer nav a {
+            color: white;
+        }
+        header.customer nav a:hover {
+            color: #ffe6cc;
+        }
+
+        /* Logged out header styles - blue theme */
+        header.loggedout {
+            background-color: #007bff;
+            color: white;
+        }
+        header.loggedout nav a {
+            color: white;
+        }
+        header.loggedout nav a:hover {
+            color: #d1e9ff;
         }
     </style>
 </head>
 <body>
-<header>
-    <h1>FoodieFreak</h1>
-    <nav>
-        {% if user.is_authenticated %}
-            <span class="user-info">Welcome, {{ user.username }}!</span>
-            <a href="{% url 'logout' %}">Logout</a>
-        {% else %}
+{% comment %}
+Logic to assign role-based header class and nav items:
+- If user is authenticated and owner, show owner header
+- If user is authenticated and customer, show customer header
+- Otherwise show loggedout header
+{% endcomment %}
+
+{% if user.is_authenticated %}
+    {% if user.is_staff %}
+        <!-- Assuming canteen owners are staff users -->
+        <header class="owner">
+            <h1><a href="{% url 'home' %}" style="color: inherit; text-decoration: none;">FoodieFreak</a></h1>
+            <nav>
+                <span class="user-info">Welcome, {{ user.username }} (Owner)</span>
+                <a href="{% url 'owner:owner_dashboard' %}">Dashboard</a>
+                <a href="{% url 'owner:food_item_list' %}">Menu Items</a>
+                <a href="{% url 'owner:orders_list' %}">Orders</a>
+                <a href="{% url 'logout' %}">Logout</a>
+            </nav>
+        </header>
+
+    {% else %}
+        <!-- Regular authenticated customer -->
+        <header class="customer">
+            <h1><a href="{% url 'home' %}" style="color: inherit; text-decoration: none;">FoodieFreak</a></h1>
+            <nav>
+                <span class="user-info">Hello, {{ user.username }}</span>
+                <a href="{% url 'customer:customer_dashboard' %}">My Dashboard</a>
+                <a href="{% url 'customer:menu' %}">Menu</a>
+                <a href="{% url 'customer:orders' %}">My Orders</a>
+                <a href="{% url 'logout' %}">Logout</a>
+            </nav>
+        </header>
+    {% endif %}
+{% else %}
+    <!-- Not logged in -->
+    <header class="loggedout">
+        <h1><a href="{% url 'home' %}" style="color: inherit; text-decoration: none;">FoodieFreak</a></h1>
+        <nav>
             <a href="{% url 'login' %}">Login</a>
             <a href="{% url 'register' %}">Register</a>
-        {% endif %}
-    </nav>
-</header>
+        </nav>
+    </header>
+{% endif %}
+
 <main style="padding: 20px;">
