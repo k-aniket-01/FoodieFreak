@@ -1,0 +1,115 @@
+{% include 'header.html' %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Canteen Owner - FoodieFreak</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 40px;
+            background-color: #f4f4f4;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        h1, h2 {
+            color: #2c3e50;
+        }
+
+        ul {
+            padding-left: 20px;
+        }
+
+        li {
+            margin-bottom: 10px;
+        }
+
+        .cta {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #eafaf1;
+            border-left: 5px solid #2c3e50;
+        }
+
+        .cta p {
+            font-size: 18px;
+        }
+
+        .btn-register {
+            display: inline-block;
+            margin-top: 15px;
+            padding: 10px 20px;
+            background-color: #2c3e50;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+
+        .btn-register:hover {
+            background-color: #1a252f;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Welcome Canteen Owners!</h1>
+        <p>
+            Join <strong>FoodieFreak</strong> and transform your canteen into a smart, efficient, and modern food management system.
+            Our platform is built to simplify operations and enhance customer experience.
+        </p>
+
+        <h2>Canteen Owner Features</h2>
+
+        <ul>
+            <li><strong>Owner Dashboard:</strong> View key stats like today’s orders, total sales, and active tables.</li>
+            <li><strong>Food Item Management:</strong>
+                <ul>
+                    <li>Add new food items (name, description, price, category, availability)</li>
+                    <li>Edit or delete menu items easily</li>
+                </ul>
+            </li>
+            <li><strong>Order Management:</strong>
+                <ul>
+                    <li>Track and update order status (Pending, Preparing, Ready, Delivered)</li>
+                    <li>Cancel or refund orders when necessary</li>
+                </ul>
+            </li>
+            <li><strong>Table Management:</strong>
+                <ul>
+                    <li>Add/edit/remove tables</li>
+                    <li>Monitor occupancy and assign orders</li>
+                </ul>
+            </li>
+            <li><strong>Sales Reports & Analytics:</strong>
+                <ul>
+                    <li>Access detailed daily, weekly, and monthly reports</li>
+                    <li>See your top-selling items and revenue insights</li>
+                </ul>
+            </li>
+            <li><strong>Notifications:</strong>
+                <ul>
+                    <li>Get instant alerts for new orders and table requests</li>
+                </ul>
+            </li>
+        </ul>
+
+        <div class="cta">
+            <p>
+                Ready to take your canteen to the next level? <br>
+                Register now with FoodieFreak and enjoy seamless management!
+            </p>
+            <a href="{% url 'register_owner' %}" class="btn-register">Register Your Canteen</a>
+        </div>
+    </div>
+</body>
+</html>

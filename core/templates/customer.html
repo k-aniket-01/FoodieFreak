@@ -1,0 +1,100 @@
+{% include 'header.html' %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Customer - FoodieFreak</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 40px;
+            background-color: #f4f4f4;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        h1, h2 {
+            color: #2c3e50;
+        }
+
+        ul {
+            padding-left: 20px;
+        }
+
+        li {
+            margin-bottom: 10px;
+        }
+
+        .cta {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #f0f8ff;
+            border-left: 5px solid #2c3e50;
+        }
+
+        .cta p {
+            font-size: 18px;
+        }
+
+        .btn-register {
+            display: inline-block;
+            margin-top: 15px;
+            padding: 10px 20px;
+            background-color: #2c3e50;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+
+        .btn-register:hover {
+            background-color: #1a252f;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Welcome to FoodieFreak, Customers!</h1>
+        <p>
+            FoodieFreak enhances your dining experience by allowing you to browse, order, and track your meals directly from your table. No more queues, just convenience and flavor!
+        </p>
+
+        <h2>Customer Features</h2>
+        <ul>
+            <li><strong>Customer Dashboard:</strong> View current orders, order history, and wallet balance (if available).</li>
+            <li><strong>Table Identification:</strong> Select or enter your table number to start ordering.</li>
+            <li><strong>Browse Menu:</strong> Explore food items, filter by category, and read item details.</li>
+            <li><strong>Place Orders:</strong>
+                <ul>
+                    <li>Add multiple items to your cart</li>
+                    <li>Specify quantity and add special requests</li>
+                    <li>Place order for your table with one click</li>
+                </ul>
+            </li>
+            <li><strong>Order Tracking:</strong> Track real-time status updates (Pending, Preparing, Ready, Served).</li>
+            <li><strong>Payment (Optional):</strong>
+                <ul>
+                    <li>Pay via wallet, card, or other online options</li>
+                    <li>Top-up your wallet anytime</li>
+                </ul>
+            </li>
+            <li><strong>Order History:</strong> View past orders and quickly reorder your favorites.</li>
+        </ul>
+
+        <div class="cta">
+            <p>
+                Hungry already? Start your experience with FoodieFreak now!
+            </p>
+            <a href="{% url 'register_customer' %}" class="btn-register">Register as Customer</a>
+        </div>
+    </div>
+</body>
+</html>

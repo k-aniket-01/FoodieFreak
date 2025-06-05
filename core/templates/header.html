@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 30px;
+            background-color: #2c3e50;
+            color: white;
+        }
+
+        .project-name {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        nav {
+            position: relative;
+        }
+
+        nav a {
+            margin: 0 10px;
+            color: white;
+            text-decoration: none;
+        }
+
+        nav a:hover {
+            text-decoration: underline;
+        }
+
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            right: 0;
+            background-color: white;
+            min-width: 160px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            z-index: 1;
+            border-radius: 4px;
+        }
+
+        .dropdown-content a {
+            color: #2c3e50;
+            padding: 10px 15px;
+            text-decoration: none;
+            display: block;
+        }
+
+        .dropdown-content a:hover {
+            background-color: #f1f1f1;
+        }
+
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <!-- Left Side - Project Name -->
+        <div class="project-name">
+            FoodieFreak
+        </div>
+
+        <!-- Right Side - Navigation Links -->
+        <nav>
+            <a href="{% url 'home' %}">Home</a>
+            <a href="{% url 'owner' %}">Canteen Owner</a>
+            <a href="{% url 'customer' %}">Customer</a>
+            <a href="{% url 'contactus' %}">Contact Us</a>
+
+            <div class="dropdown">
+                <a href="#">Register</a>
+                <div class="dropdown-content">
+                    <a href="{% url 'register_customer' %}">As Customer</a>
+                    <a href="{% url 'register_owner' %}">As Canteen Owner</a>
+                </div>
+            </div>
+
+            <div class="dropdown">
+                <a href="#">Login</a>
+                <div class="dropdown-content">
+                    <a href=>As Customer</a>
+                    <a href=>As Canteen Owner</a>
+                </div>
+            </div>
+        </nav>
+    </header>
+</body>
+</html>
