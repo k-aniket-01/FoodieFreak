@@ -1,8 +1,7 @@
-from fastapi import FastAPI
+from fastapi import FastAPI 
+from app.routers import authentication
 
 app = FastAPI()
 #uvicorn app.main:app --reload
 
-@app.get('/')
-def greet():
-    return {"message":"Hello FoodieFreak Dev"}
+app.include_router(authentication.router)

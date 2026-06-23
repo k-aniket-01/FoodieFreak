@@ -1,5 +1,6 @@
+from datetime import datetime
 from app.database import Base
-from sqlalchemy import Column, String, Integer, ForeignKey, Boolean, Date
+from sqlalchemy import Column, String, Integer, ForeignKey, Boolean, Date, DateTime
 from sqlalchemy.orm import relationship
 
 class Role(Base):
@@ -16,7 +17,8 @@ class User(Base):
     name = Column(String(100))
     email = Column(String(255), unique=True)
     phone = Column(String(20))
-    password_hash= Column(String(255))
+    password_hash = Column(String(255))
+    created_at = Column(DateTime, default=datetime.now)
     # role_id = Column(Integer, ForeignKey("roles.id"))
 
     roles = relationship("Role", secondary="user_roles", back_populates="users")
