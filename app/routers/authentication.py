@@ -65,3 +65,11 @@ def login(data:LoginRequest, db:Session=Depends(get_db)):
 @router.get('/auth/me', response_model=AuthMeResponse)
 def auth_me(db:Session=Depends(get_db), current_user:User=Depends(get_current_user)):
     return current_user
+
+@router.get('/test/customer')
+def rabc_customer(current_user: User = Depends(require_customer)):
+    return "yes its customer"
+
+@router.get('/test/owner')
+def rabc_owner(current_user: User = Depends(require_owner)):
+    return "yes its owner"
