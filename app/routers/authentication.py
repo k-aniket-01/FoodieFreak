@@ -63,13 +63,27 @@ def login(data:LoginRequest, db:Session=Depends(get_db)):
         }
 
 @router.get('/auth/me', response_model=AuthMeResponse)
-def auth_me(db:Session=Depends(get_db), current_user:User=Depends(get_current_user)):
+def auth_me(current_user:User=Depends(get_current_user)):
     return current_user
 
-@router.get('/test/customer')
+@router.get('/test/customer') #test route delete later
 def rabc_customer(current_user: User = Depends(require_customer)):
     return "yes its customer"
 
-@router.get('/test/owner')
+@router.get('/test/owner') #test route delete later
 def rabc_owner(current_user: User = Depends(require_owner)):
     return "yes its owner"
+
+@router.patch('/auth/update-password')
+def update_password(
+    data:UpdatePassSchema,
+    User = Depends(get_current_user),
+    db: Session=Depends(get_db)):
+    valid = verify_password(data.current_pass, User.password_hash)
+    if not valid:
+        return {"message":"Password invalid"}
+    new_pass = hash_password(data.new_pass)
+    User.password_hash = new_pass
+  
+    db.commit()
+    return {"message":"Password update successful"}

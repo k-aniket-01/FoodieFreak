@@ -57,3 +57,7 @@ class AuthMeResponse(BaseModel):
     class Config:
         # populate_by_name = True
         from_attributes = True
+
+class UpdatePassSchema(BaseModel):
+    current_pass :str
+    new_pass:str
