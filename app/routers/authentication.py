@@ -49,11 +49,19 @@ def registration(data:RegisterRequest, db:Session=Depends(get_db)):
     }
 
 @router.post('/auth/login')
-def Login(data:LoginRequest, db:Session=Depends(get_db)):
+def login(data:LoginRequest, db:Session=Depends(get_db)):
     user = db.query(User).filter(User.email == data.email).first()
     if not user:
         return {"status":False, "message":"User not Found"}
     if not verify_password(data.password, user.password_hash):
         return {"status":False, "message":"Invalid Credentials"}
-    token = create_jwt_token(data={"sub":user.email})
-    return {"access_toke":token,"type":"bearer"}
+    access_token = create_jwt_token(data={"sub":user.email})
+    
+    return {
+        "access_token":access_token,
+        "type":"bearer"
+        }
+
+@router.get('/auth/me', response_model=AuthMeResponse)
+def auth_me(db:Session=Depends(get_db), current_user:User=Depends(get_current_user)):
+    return current_user

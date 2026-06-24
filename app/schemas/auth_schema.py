@@ -1,5 +1,5 @@
 from pydantic import BaseModel, EmailStr, Field, field_validator
-
+from typing import Optional, List
 class RegisterRequest(BaseModel):
     name : str
     email : EmailStr
@@ -37,3 +37,23 @@ class LoginRequest(BaseModel):
     password : str
     role : str = None
         
+    
+class RoleSchema(BaseModel):
+    id: int
+    name: str
+    description: Optional[str] = None
+
+    # class Config:
+    #     from_attributes = True
+        
+class AuthMeResponse(BaseModel):
+    id :int
+    name : str
+    email :EmailStr
+    phone :Optional[str] = None
+    roles : Optional[List[RoleSchema]] = []
+    carts : Optional[list[None]] = []
+    orders : Optional[list[None]] = []
+    class Config:
+        # populate_by_name = True
+        from_attributes = True
