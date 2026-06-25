@@ -66,11 +66,11 @@ def login(data:LoginRequest, db:Session=Depends(get_db)):
 def auth_me(current_user:User=Depends(get_current_user)):
     return current_user
 
-@router.get('/test/customer') #test route delete later
+@router.get('/test/customer') #test purpose  route delete later
 def rabc_customer(current_user: User = Depends(require_customer)):
     return "yes its customer"
 
-@router.get('/test/owner') #test route delete later
+@router.get('/test/owner') #test purpose route delete later
 def rabc_owner(current_user: User = Depends(require_owner)):
     return "yes its owner"
 
@@ -81,9 +81,20 @@ def update_password(
     db: Session=Depends(get_db)):
     valid = verify_password(data.current_pass, User.password_hash)
     if not valid:
-        return {"message":"Password invalid"}
+        return {
+                "status": False,
+                "message":"Password invalid"
+                }
+    is_same = pwd_context.verify(data.current_pass, User.password_hash)
+    if is_same:
+        return {
+                "status": False,
+                "message": "New password must be different from current password"
+                }
     new_pass = hash_password(data.new_pass)
     User.password_hash = new_pass
-  
     db.commit()
-    return {"message":"Password update successful"}
+    return {
+            "status": True,
+            "message":"Password update successful"
+            }
