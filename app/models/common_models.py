@@ -19,6 +19,7 @@ class User(Base):
     phone = Column(String(20))
     password_hash = Column(String(255))
     created_at = Column(DateTime, default=datetime.now)
+    is_deleted = Column(Boolean, default=False)
     # role_id = Column(Integer, ForeignKey("roles.id"))
 
     roles = relationship("Role", secondary="user_roles", back_populates="users")

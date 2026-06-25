@@ -53,6 +53,8 @@ def login(data:LoginRequest, db:Session=Depends(get_db)):
     user = db.query(User).filter(User.email == data.email).first()
     if not user:
         return {"status":False, "message":"User not Found"}
+    if user.is_deleted:
+        return {"status":False, "message":"User not Found"}
     if not verify_password(data.password, user.password_hash):
         return {"status":False, "message":"Invalid Credentials"}
     access_token = create_jwt_token(data={"sub":user.email})

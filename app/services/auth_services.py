@@ -58,6 +58,8 @@ def get_current_user(token:str =Depends(oauth2_scheme), db:Session=Depends(get_d
     user = db.query(User).filter(User.email == email).first()
     if user is None:
         raise cred_exception
+    if user.is_deleted:
+        raise cred_exception
     return user
 
 def require_role(role_name:str):
