@@ -18,3 +18,9 @@ class UserPofileSchema(BaseModel):
 class UpdateUserSchema(BaseModel):
     name : Optional[str]
     phone : Optional[str]
+
+class UserOrdersResponseSchema(BaseModel):
+    name : Optional[Any] = None
+    id : Optional[Any] = None
+    total_amount : Optional[Any] = None
+    status : Optional[Any] = None

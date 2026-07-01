@@ -33,21 +33,20 @@ def delete_user(
     db.refresh(user)
     return user
 
-@router.get('/user/orders/')
-def get_user_orders(db:Session=Depends(get_db), user:User= Depends(get_current_user)):
+@router.get('/user/orders/', response_model=list[UserOrdersResponseSchema])
+def get_user_orders(
+    db:Session=Depends(get_db), 
+    user : User = Depends(get_current_user)
+):
     query = (
-        db.query(User, Order)
+        db.query(
+            User.name, 
+            Order.id,
+            Order.total_amount,
+            Order.status
+            )
         .join(Order, User.id == Order.user_id)
         .filter(User.id == user.id)
         .all()
              )
-    data = [
-        {
-            "name":user.name, 
-            "order":order.id,
-            "amount":order.total_amount,
-            "status":order.status
-            }
-            for user, order in query
-            ]
-    return data
+    return query
