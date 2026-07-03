@@ -71,6 +71,7 @@ class AuthMeResponseSchema(BaseModel):
         from_attributes = True
 
 
-class AuthUpdatePassSchema(BaseModel):
-    current_pass :str
-    new_pass:str
+class AuthUpdatePassRequestSchema(BaseModel):
+    current_password : str
+    new_password : str
+    confirm_password : str 

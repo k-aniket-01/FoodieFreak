@@ -9,9 +9,7 @@ from dotenv import load_dotenv
 from fastapi.security import OAuth2PasswordBearer
 from app.models.common_models import *
 import os
-from app.authentication.schema.authentication_schema import (
-    AuthRegisterRequestSchema, AuthLoginRequestSchema
-)
+
 load_dotenv()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl='/auth/login')
 print(oauth2_scheme.model.model_dump())

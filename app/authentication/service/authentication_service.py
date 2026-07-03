@@ -1,12 +1,13 @@
 from sqlalchemy import or_, and_
 from app.models.common_models import User, UserRole
 from sqlalchemy.orm import Session
-from fastapi import Depends, HTTPException, status
-from app.database import get_db
-from app.utility.auth_utility import hash_password, verify_password, create_jwt_token
+from fastapi import HTTPException, status
 from sqlalchemy.exc import IntegrityError
+from app.utility.auth_utility import (
+    hash_password, verify_password, create_jwt_token, get_current_user
+)
 from app.authentication.schema.authentication_schema import (
-    AuthRegisterRequestSchema, AuthLoginRequestSchema
+    AuthRegisterRequestSchema, AuthLoginRequestSchema, AuthUpdatePassRequestSchema
 )
 from app.authentication.transformer.authentication_transformer import (
     auth_register_transformer , auth_login_transformer
@@ -51,3 +52,18 @@ def auth_login_service(data:AuthLoginRequestSchema, db:Session):
     else:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="USER NOT FOUND")            
         
+        
+def auth_update_pwd_service(data:AuthUpdatePassRequestSchema, user, db:Session):
+    verified = verify_password(data.current_password, user.password)
+    if verified:
+        is_same = verify_password(data.confirm_password, user.password)
+        if is_same:
+            raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, 
+                                detail="CURRENT PASSWORD & NEW PASSWORD CANNOT BE SAME")
+        user.password = hash_password(data.new_password)
+        db.commit()
+        return True
+    else:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+                            detail="WRONG CREDENTIALS")
+            
