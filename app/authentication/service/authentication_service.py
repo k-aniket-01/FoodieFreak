@@ -10,7 +10,7 @@ from app.authentication.schema.authentication_schema import (
     AuthRegisterRequestSchema, AuthLoginRequestSchema, AuthUpdatePassRequestSchema
 )
 from app.authentication.transformer.authentication_transformer import (
-    auth_register_transformer , auth_login_transformer
+    auth_register_transformer , auth_login_transformer, auth_me_transformer
 )
 
     
@@ -67,3 +67,7 @@ def auth_update_pwd_service(data:AuthUpdatePassRequestSchema, user, db:Session):
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
                             detail="WRONG CREDENTIALS")
             
+            
+def auth_me_service(data):
+    response = auth_me_transformer(data)
+    return response

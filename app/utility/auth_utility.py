@@ -12,7 +12,6 @@ import os
 
 load_dotenv()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl='/auth/login')
-print(oauth2_scheme.model.model_dump())
 
 SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = "HS256"

@@ -65,8 +65,8 @@ class AuthMeResponseSchema(BaseModel):
     email :EmailStr
     phone :Optional[str] = None
     roles : Optional[List[RoleSchema]] = []
-    carts : Optional[list[None]] = []
-    orders : Optional[list[None]] = []
+    carts : Optional[list[Any]] = []
+    orders : Optional[list[Any]] = []
     class Config:
         from_attributes = True
 
