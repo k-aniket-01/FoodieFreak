@@ -1,5 +1,6 @@
 from passlib.context import CryptContext
 from fastapi import Depends, HTTPException
+from sqlalchemy import and_
 from sqlalchemy.orm import Session
 from app.database import get_db
 from datetime import datetime, timedelta, timezone
@@ -8,13 +9,16 @@ from dotenv import load_dotenv
 from fastapi.security import OAuth2PasswordBearer
 from app.models.common_models import *
 import os
-
+from app.authentication.schema.authentication_schema import (
+    AuthRegisterRequestSchema, AuthLoginRequestSchema
+)
 load_dotenv()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl='/auth/login')
+print(oauth2_scheme.model.model_dump())
 
 SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30    
+ACCESS_TOKEN_EXPIRE_MINUTES = 15   
 
 
 pwd_context = CryptContext(
@@ -50,23 +54,19 @@ def get_current_user(token:str =Depends(oauth2_scheme), db:Session=Depends(get_d
     payload = decode_token(token)
     if payload is None:
         raise cred_exception
-    
     email = payload.get("sub")
     if email is None:
         raise cred_exception
-    
-    user = db.query(User).filter(User.email == email).first()
+    user = db.query(User).filter(and_(User.email == email, User.is_deleted != True)).first()
     if user is None:
-        raise cred_exception
-    if user.is_deleted:
         raise cred_exception
     return user
 
 def require_role(role_name:str):
     def role_checker(current_user : User =  Depends(get_current_user)):
         user_roles = [role.name for role in current_user.roles]
-        print(len(user_roles))
-        for i in user_roles:print(f'userroles >{i}')
+        # print(len(user_roles))
+        # for i in user_roles:print(f'userroles >{i}')
         if role_name not in user_roles:
             print(role_name)
             raise HTTPException(

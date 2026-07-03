@@ -1,54 +1,39 @@
-# from fastapi import APIRouter, Depends
-# from sqlalchemy.orm import Session
-# from app.database import get_db
-# from app.schemas.auth_schema import *
-# from app.models.common_models import *
-# from app.services.auth_services import *
+from fastapi import APIRouter, Depends, Request
+from sqlalchemy.orm import Session
+from app.database import get_db
+from app.authentication.schema.authentication_schema import (
+    AuthRegisterRequestSchema, AuthLoginRequestSchema
+)
+from app.authentication.service.authentication_service import (
+    auth_register_service, auth_login_service
+)
 
-# router = APIRouter()
+auth_router = APIRouter()
 
-# @router.get('/')
-# def home():
-#     return {"status":True,
-#             "message":"welocme dev"}
+@auth_router.post('/auth/register')
+def auth_registration(body:AuthRegisterRequestSchema, db:Session=Depends(get_db)):
+    response = auth_register_service(body, db)
+    return  response 
 
-# @router.post('/auth/register')
-# def registration(data:RegisterRequest, db:Session=Depends(get_db)):
-#     email = db.query(User).filter(User.email == data.email).first()
-#     if email:
-#         return {"status":False, "message":"Email already exists"}
-    
-#     phone = db.query(User).filter(User.phone == data.phone).first()
-#     if phone:
-#         return {"status":False, "message":"Phone already exists"}
-    
-#     role = db.query(Role).filter(Role.name == data.role).first()
-#     print(data.role)
-#     if not role:
-#         return {"status":False, "message":"Role not Found"}
-    
-#     hashed_password = hash_password(data.password)
+@auth_router.post('/login')
+def auth_login(request : Request, body:AuthLoginRequestSchema, db:Session=Depends(get_db)):
+    response = auth_login_service(body, db)
+    return response 
 
-#     new_user = User(
-#         name=data.name,
-#         email=data.email,
-#         phone=data.phone,
-#         password_hash = hashed_password
-#     )
-#     db.add(new_user)
-#     db.flush()
+#keep commented for swagger login (jwt header issue solver)
+# @auth_router.post('/auth/login')
+# async def auth_login(request : Request, db:Session=Depends(get_db)):
+#     form = await request.form()
+#     data = AuthLoginRequestSchema(email=form["username"], password=form["password"])
+#     response = auth_login_service(data, db)
+#     return response
 
-#     user_role = UserRole(user_id = new_user.id,role_id = role.id)
-#     db.add(user_role)
-#     db.commit()
 
-#     return {
-#         "status":True,
-#         "message":"Registration sucessful",
-#         "user_id":new_user.id
-#     }
 
-# @router.post('/auth/login')
+
+
+
+
 # def login(data:LoginRequest, db:Session=Depends(get_db)):
 #     user = db.query(User).filter(User.email == data.email).first()
 #     if not user:
