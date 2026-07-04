@@ -1,7 +1,6 @@
 from fastapi import FastAPI 
 from app.authentication.router.authentication_router import auth_router
 from app.user.router.user_router import user_router
-# from app.routers.users import router
 # from test import test_router
 
 app = FastAPI()
