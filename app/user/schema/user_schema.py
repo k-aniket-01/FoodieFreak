@@ -17,3 +17,17 @@ class UserProfileUpdateRequestSchema(BaseModel):
 
 class UserProfileUpdateResponseSchema(UserProfileResponseSchema):
     pass
+
+class GetUserOrdersSchema(UserProfileResponseSchema):
+    orders : Optional[Any] = None
+    
+class GetUserPaymentsSchema(BaseModel):
+    id : Optional[Any] = None
+    name : Optional[Any] = None
+    email : Optional[Any] = None
+    phone : Optional[Any] = None
+    is_active : Optional[Any] = None
+    order_id : Optional[Any] = None
+    transaction_id : Optional[Any] = None
+    payment_method : Optional[Any] = None
+    status : Optional[Any] = None
