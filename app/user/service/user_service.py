@@ -16,3 +16,8 @@ def update_user_profile_service(body, user:User, db):
     db.refresh(user)
     response = update_user_profile_transformer(user)
     return response
+
+def delete_user_profile_service(user:User, db):
+    user.is_active = False
+    db.commit()
+    return True
