@@ -4,14 +4,20 @@ from app.authentication.schema.authentication_schema import (
 
 
 def auth_register_transformer(data):
-    data = (AuthRegisterResponseSchema.model_validate(data, from_attributes=True)).model_dump()
-    return data
+    response = (AuthRegisterResponseSchema
+                .model_validate(data, from_attributes=True)
+                .model_dump())
+    return response
     
     
 def auth_login_transformer(data):
-    data = (AuthLoginResponseSchema.model_validate(data, from_attributes=True)).model_dump()
-    return data 
+    response = (AuthLoginResponseSchema
+                .model_validate(data, from_attributes=True)
+                .model_dump())
+    return response 
 
 def auth_me_transformer(data):
-    data = (AuthMeResponseSchema.model_validate(data, from_attributes=True)).model_dump()
-    return data
+    response = (AuthMeResponseSchema
+                .model_validate(data, from_attributes=True)
+                .model_dump())
+    return response
