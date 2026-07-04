@@ -36,7 +36,7 @@ def auth_register_service(data:AuthRegisterRequestSchema, db: Session):
 def auth_login_service(data:AuthLoginRequestSchema, db:Session):
     user = (
         db.query(User).filter(
-            and_( User.email == data.email, User.is_deleted != True)
+            and_( User.email == data.email, User.is_active == True)
             )).first()
     if user:
         verified = verify_password(data.password, user.password)
