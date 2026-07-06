@@ -40,8 +40,6 @@ def get_user_payment_service(db):
              .join(Order, User.id == Order.user_id)
              .join(Payment, Order.id == Payment.order_id))
     query = query.all()
-    print(query)
-    print(type(query))
     response = get_user_payments_transformer(query)
     
     return response

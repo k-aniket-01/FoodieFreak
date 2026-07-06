@@ -36,8 +36,9 @@ class UserRole(Base):
 class Category(Base):
     __tablename__ = 'categories'
     id = Column(Integer, primary_key=True)
-    name = Column(String(100))
+    name = Column(String(100), unique=True)
     description = Column(String(500))
+    is_active = Column(Boolean, default=True)
 
     food_items = relationship("FoodItem",back_populates='category')
 

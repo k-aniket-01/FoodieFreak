@@ -62,10 +62,7 @@ def get_current_user(token:str =Depends(oauth2_scheme), db:Session=Depends(get_d
 def require_role(role_name:str):
     def role_checker(current_user : User =  Depends(get_current_user)):
         user_roles = [role.name for role in current_user.roles]
-        # print(len(user_roles))
-        # for i in user_roles:print(f'userroles >{i}')
         if role_name not in user_roles:
-            print(role_name)
             raise HTTPException(
                 status_code=403,
                 detail="Permission Denied"
