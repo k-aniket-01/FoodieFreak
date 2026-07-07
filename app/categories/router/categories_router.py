@@ -1,12 +1,13 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from app.utility.auth_utility import get_current_user, get_db, require_owner
+from app.database import get_db
+from app.utility.auth_utility import require_owner
 from app.categories.schema.categories_schema import (
     PostCategoriesRequestSchema, PutCategoryIdSchema
 )
 from app.categories.service.categories_service import (
-    post_category_service, get_categories_service, get_category_id_service, put_category_id_service,
-    delete_category_id_service, 
+    post_category_service, get_categories_service, get_category_id_service, 
+    put_category_id_service, delete_category_id_service, 
 )
 
 categories_router = APIRouter()

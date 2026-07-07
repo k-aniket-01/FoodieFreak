@@ -55,7 +55,8 @@ def put_category_id_service(id,body,db):
     
 def delete_category_id_service(id,db):
     data = (db.query(Category)
-            .filter(Category.id == id)
+            .filter(and_(Category.id == id,
+                         Category.is_active == True))
             .first())
     if data is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, 

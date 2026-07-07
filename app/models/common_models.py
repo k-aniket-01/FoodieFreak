@@ -46,10 +46,12 @@ class Category(Base):
 class FoodItem(Base):
     __tablename__ = 'food_items'
     id = Column(Integer, primary_key=True)
-    name = Column(String(100))
+    name = Column(String(100), unique=True)
     description = Column(String(500))
     price = Column(Integer)
+    is_available = Column(Boolean, default=True)
     category_id = Column(Integer, ForeignKey("categories.id"))
+    is_active = Column(Boolean, default=True)
 
     category = relationship("Category", back_populates="food_items")
     
