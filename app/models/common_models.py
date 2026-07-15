@@ -1,6 +1,6 @@
 from datetime import datetime
 from app.database import Base
-from sqlalchemy import Column, String, Integer, ForeignKey, Boolean, Date, DateTime
+from sqlalchemy import Column, String, Integer, ForeignKey, Boolean, Date, DateTime, UniqueConstraint
 from sqlalchemy.orm import relationship
 
 class Role(Base):
@@ -58,6 +58,9 @@ class FoodItem(Base):
 
 class DailyMenu(Base):
     __tablename__ = 'daily_menus'
+    __table_args__ = (
+                    UniqueConstraint("food_item_id","menu_date"),
+    )
     id = Column(Integer, primary_key=True)
     food_item_id = Column(Integer, ForeignKey("food_items.id"))
     menu_date = Column(Date)
