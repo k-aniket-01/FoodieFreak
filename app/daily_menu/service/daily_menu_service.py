@@ -2,8 +2,9 @@ from fastapi import HTTPException, status
 from datetime import date
 from sqlalchemy import and_
 from sqlalchemy.exc import IntegrityError
-from app.daily_menu.transformer.daily_menu_transformer import get_daily_menu_transformer
+from app.daily_menu.transformer.daily_menu_transformer import get_daily_menu_transformer, get_daily_menu_history_transformer
 from app.models.common_models import DailyMenu
+from app.utility.response_utility import apply_filters, apply_pagination
 
 
 def post_daily_menu_service(body, db):
@@ -83,4 +84,14 @@ def delete_daily_menu_item_service(id, db):
                 "message":f"Deleted {id}"}
     raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
                         detail=["MENU ITEM NOT FOUND"])
-     
+    
+
+def get_daily_menu_history_service(body, db):
+    query = db.query(DailyMenu)
+    query = apply_filters(body=body, model=DailyMenu, query=query)
+    if body.pagination:
+        query = apply_pagination(body=body.pagination, query=query)
+    query = query.all()
+    response_data = get_daily_menu_history_transformer(query)
+    return response_data
+         

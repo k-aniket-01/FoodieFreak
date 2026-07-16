@@ -5,3 +5,9 @@ def get_daily_menu_transformer(data):
                      .model_validate(item, from_attributes=True)
                      .model_dump()for item in data)
     return response_data
+
+def get_daily_menu_history_transformer(data):
+    response_data = (DailyMenuResponseSchema
+                     .model_validate(item, from_attributes=True)
+                     .model_dump()for item in data)
+    return response_data

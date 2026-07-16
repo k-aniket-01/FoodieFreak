@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 from typing import Optional,Any
 from datetime import date
+from app.utility.response_utility import PaginationRequestSchema
 
 class DailyMenuBaseSchema(BaseModel):
     menu_date : Optional[date] = None
@@ -26,3 +27,11 @@ class PutDailyMenuRequestSchema(BaseModel):
     menu_date : Optional[date] = date.today()
     available_qty : Optional[int] = None
     is_available : Optional[bool] = None
+
+    
+class DailyMenuHistoryRequestSchema(BaseModel):
+    menu_date : Optional[date] = None
+    id : Optional[int] = None
+    food_item_id : Optional[int] = None
+    is_available : Optional[bool] = None
+    pagination : Optional[PaginationRequestSchema] = None
