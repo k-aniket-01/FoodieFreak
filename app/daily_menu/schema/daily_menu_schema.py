@@ -3,7 +3,7 @@ from typing import Optional,Any
 from datetime import date
 
 class DailyMenuBaseSchema(BaseModel):
-    menu_date : Optional[str | date] = None
+    menu_date : Optional[date] = None
     id : Optional[int] = None
     food_item_id : Optional[int] = None
     available_qty : Optional[int] = None
@@ -15,7 +15,7 @@ class FoodItemSchema(BaseModel):
     available_qty : Optional[int] = None
     
 class DailyMenuRequestSchema(BaseModel):
-    menu_date : Optional[str | date] = str(date.today())
+    menu_date : Optional[date] = date.today()
     food_items : Optional[list[FoodItemSchema]] = None
     
 class DailyMenuResponseSchema(DailyMenuBaseSchema):
@@ -23,6 +23,6 @@ class DailyMenuResponseSchema(DailyMenuBaseSchema):
         from_attributes = True    
         
 class PutDailyMenuRequestSchema(BaseModel):
-    menu_date : Optional[str | date] = str(date.today())
+    menu_date : Optional[date] = date.today()
     available_qty : Optional[int] = None
     is_available : Optional[bool] = None

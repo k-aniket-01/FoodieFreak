@@ -10,7 +10,7 @@ from app.daily_menu.service.daily_menu_service import (
 daily_menu_router = APIRouter()
 
 
-@daily_menu_router.post('/post/batch/daily/menu')
+@daily_menu_router.post('/post/daily/menu')
 def post_daily_menu(body:DailyMenuRequestSchema,
                     db: Session = Depends(get_db),
                     user = Depends (require_owner)
@@ -19,7 +19,7 @@ def post_daily_menu(body:DailyMenuRequestSchema,
     return response_data
 
 
-@daily_menu_router.get('/get/daily/menu/today')
+@daily_menu_router.get('/get/daily/menu/')
 def get_daily_menu_today(db:Session=Depends(get_db)
                          ):
     response_data = get_daily_menu_today_service(db)
