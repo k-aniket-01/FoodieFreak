@@ -81,6 +81,7 @@ class Cart(Base):
 
 class CartItem(Base):
     __tablename__ = 'cart_items'
+    __table_args__ = (UniqueConstraint("cart_id","food_item_id"),)
     id = Column(Integer, primary_key=True)
     cart_id = Column(Integer, ForeignKey("carts.id"))
     food_item_id = Column(Integer, ForeignKey("food_items.id"))
