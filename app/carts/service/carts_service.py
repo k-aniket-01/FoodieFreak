@@ -61,6 +61,7 @@ def get_cart_items_service(db, user):
     response_data = get_cart_items_transformer(summery, items)
     return response_data
 
+
 def put_cart_item_service(id,body,db,user):
     cart_id = next((cart.id for cart in user.carts), None)
     if body.quantity <= 0:
@@ -81,3 +82,43 @@ def put_cart_item_service(id,body,db,user):
         return True
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, 
                         detail=['ITEM NOT FOUND'])
+    
+    
+def delete_cart_item_service(id,db,user):
+    cart_id = next((cart.id for cart in user.carts), None)
+    if cart_id is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail=['CART NOT FOUND'])
+    item = (db.query(CartItem)
+            .filter(CartItem.cart_id == cart_id,
+                    CartItem.id == id)
+            .first()
+            )
+    if item:
+        db.delete(item)
+        db.commit()
+        return True
+    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                        detail=['ITEM NOT FOUND'])
+    
+
+def clear_cart_items_service(db,user):
+    cart_id = next((cart.id for cart in user.carts), None)
+    if cart_id is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail=['CART NOT FOUND'])
+    items = (db.query(CartItem)
+             .filter(CartItem.cart_id == cart_id)
+             .all()
+             )
+    if items is None:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail=['NO ITEM FOUND TO REMOVE'])
+    try:
+        db.delete(*items)
+        db.commit()
+        return True
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                            detail=f"{e}")
+        
