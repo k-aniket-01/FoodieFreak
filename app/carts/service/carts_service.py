@@ -1,8 +1,8 @@
 from fastapi import HTTPException,status
 from sqlalchemy import func
 from app.models.common_models import CartItem, Cart, FoodItem
-from app.carts.transformer.carts_transformer import get_cart_items_transformer
-
+from app.carts.transformer.carts_transformer import get_cart_items_transformer,get_cart_summery_transformer
+from app.carts.schema.carts_schema import SummerySchema
 def post_cart_item_service(body, db ,user):
     body = body.model_dump()
     quantity = body.get('quantity')
@@ -45,8 +45,11 @@ def get_cart_items_service(db, user):
             .filter(CartItem.cart_id == cart_id)
             .first()
             )
-    if summery is None:
-        return []
+    if summery is None :
+        return {"cart_id":cart_id,
+                "message":"CART IS EMPTY",
+                "total_items": 0,
+                "total_amount":0}
     items = (db.query(CartItem.id,
                       CartItem.food_item_id,
                       FoodItem.name,
@@ -122,3 +125,26 @@ def clear_cart_items_service(db,user):
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                             detail=f"{e}")
         
+
+def get_cart_summery_service(db, user):
+    cart_id = next((cart.id for cart in user.carts), None)
+    if cart_id is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail='CART NOT FOUND')
+    data = (db.query(CartItem.cart_id,
+                     func.count(CartItem.id).label('total_items'),
+                     func.sum(CartItem.quantity * FoodItem.price).label('total_amount')
+                     )
+                     .join(FoodItem, CartItem.food_item_id == FoodItem.id)
+                     .group_by(CartItem.cart_id)
+                     .filter(CartItem.cart_id == cart_id)
+                     .first()
+                     )
+    print(data)
+    if data is None :
+        return {"cart_id":cart_id,
+                "message":"CART IS EMPTY",
+                "total_items": 0,
+                "total_amount":0}
+    response_data = get_cart_summery_transformer(data)
+    return response_data

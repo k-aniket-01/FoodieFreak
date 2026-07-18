@@ -16,3 +16,10 @@ def get_cart_items_transformer(summery, items):
                      .model_dump()
                     )
     return response_data
+
+def get_cart_summery_transformer(data):
+    response_data = (SummerySchema
+                     .model_validate(data, from_attributes=True)
+                     .model_dump()
+                     )
+    return response_data
