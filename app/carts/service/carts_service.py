@@ -1,6 +1,7 @@
 from fastapi import HTTPException,status
-from app.models.common_models import CartItem, Cart
-
+from sqlalchemy import func
+from app.models.common_models import CartItem, Cart, FoodItem
+from app.carts.transformer.carts_transformer import get_cart_items_transformer
 
 def post_cart_item_service(body, db ,user):
     body = body.model_dump()
@@ -30,3 +31,32 @@ def post_cart_item_service(body, db ,user):
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                             detail=f"{e}")
     
+    
+def get_cart_items_service(db, user):
+    cart_id = next((cart.id for cart in user.carts), None)
+    if cart_id is None:
+        return []
+    summery = (db.query(CartItem.cart_id,
+                        func.count(CartItem.id).label('total_items'),
+                        func.sum(FoodItem.price * CartItem.quantity).label('total_amount')
+                        )
+            .join(FoodItem, CartItem.food_item_id == FoodItem.id)
+            .group_by(CartItem.cart_id)
+            .filter(CartItem.cart_id == cart_id)
+            .first()
+            )
+    if summery is None:
+        return []
+    items = (db.query(CartItem.id,
+                      CartItem.food_item_id,
+                      FoodItem.name,
+                      FoodItem.price,
+                      CartItem.quantity,
+                      (FoodItem.price * CartItem. quantity).label('sub_total')
+                      )
+             .join(FoodItem, CartItem.food_item_id == FoodItem.id)
+             .filter(CartItem.cart_id == cart_id)
+             .all()
+             )
+    response_data = get_cart_items_transformer(summery, items)
+    return response_data
