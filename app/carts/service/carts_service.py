@@ -60,3 +60,24 @@ def get_cart_items_service(db, user):
              )
     response_data = get_cart_items_transformer(summery, items)
     return response_data
+
+def put_cart_item_service(id,body,db,user):
+    cart_id = next((cart.id for cart in user.carts), None)
+    if body.quantity <= 0:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, 
+                            detail=['QUANTITY MUST BE GREATER THAN 0'])
+    if cart_id is None:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail=['CART NOT FOUND'])
+    item = (db.query(CartItem)
+            .filter(CartItem.cart_id == cart_id,
+                    CartItem.id == id)
+            .first()
+            )
+    if item:
+        for k,v in body.model_dump().items():
+            setattr(item, k, v)
+        db.commit()
+        return True
+    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, 
+                        detail=['ITEM NOT FOUND'])

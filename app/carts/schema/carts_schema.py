@@ -29,3 +29,5 @@ class SummerySchema(BaseModel):
 class GetCartResponseSchema(SummerySchema):
     items : list[CartItemsSchema] = []
     
+class PutCartItemRequestBody(BaseModel):
+    quantity : Optional[int] = None
