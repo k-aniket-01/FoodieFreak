@@ -1,9 +1,9 @@
 from fastapi import HTTPException, status
 from datetime import date
-from app.daily_menu.transformer.daily_menu_transformer import get_daily_menu_transformer
-from app.models.common_models import Order, OrderItem, DailyMenu, CartItem
-from app.carts.service.carts_service import get_cart_items_service, clear_cart_items_service
-from app.daily_menu.service.daily_menu_service import get_daily_menu_today_service, put_daily_menu_service
+from sqlalchemy import func
+from app.models.common_models import Order, OrderItem, DailyMenu, CartItem, FoodItem
+from app.carts.service.carts_service import get_cart_items_service
+from app.orders.transformer.orders_transformer import  get_id_order_transformer
 
 
 def post_order_service(db,user):
@@ -22,6 +22,7 @@ def post_order_service(db,user):
                   .filter(DailyMenu.menu_date == date.today(),
                           DailyMenu.food_item_id.in_(food_ids), 
                           DailyMenu.is_available == True)
+                  .with_for_update() #for the prevention 2 users place orders simultaneously
                   .all()
                   )
     menu_lookup = {menu.food_item_id: menu for menu in daily_menu}
@@ -58,5 +59,47 @@ def post_order_service(db,user):
         return order
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                            detail=f'{e}')
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f'{e}')
+    
+    
+def get_id_order_service(id,db,user):
+    user_id = user.id
+    summery = (db.query(OrderItem.order_id,
+                        Order.user_id,
+                        Order.status,
+                        func.count(OrderItem.order_id).label('total_items'),
+                        func.sum(OrderItem.quantity * OrderItem.item_price).label('total_amount')
+                        )
+               .join(OrderItem, Order.id == OrderItem.order_id)
+               .group_by(OrderItem.order_id, Order.user_id, Order.status)
+               .filter(Order.id == id,
+                       Order.user_id == user_id)
+               .first()
+               )
+    if summery is None:
+        return {"order_id":id,
+                "message":"NO ORDER FOUND",
+                "total_items": 0,
+                "total_amount":0,
+                "items": []}
+    items = (db.query(Order.id, 
+                      OrderItem.food_item_id,
+                      FoodItem.name.label('food_name'),
+                      OrderItem.quantity,
+                      OrderItem.item_price,
+                      (OrderItem.quantity * OrderItem.item_price).label('sub_total')
+                      )
+             .join(OrderItem, Order.id == OrderItem.order_id)
+             .join(FoodItem, OrderItem.food_item_id == FoodItem.id)
+             .filter(OrderItem.order_id == id,
+                     Order.user_id == user_id)
+             .all()
+             )
+    if items is None:
+        return {"order_id":id,
+                "message":"NO ORDER FOUND",
+                "total_items": 0,
+                "total_amount":0,
+                "items": []}
+    response_data = get_id_order_transformer(summery, items)
+    return response_data
