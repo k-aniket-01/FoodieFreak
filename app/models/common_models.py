@@ -95,8 +95,10 @@ class Order(Base):
     __tablename__ = "orders"
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey("users.id"))
+    total_items = Column(Integer)
     total_amount = Column(Integer)
     status = Column(String(50))
+    created_at = Column(DateTime, default=datetime.now())
 
     user = relationship("User", back_populates="orders")
     items = relationship("OrderItem", back_populates="order")

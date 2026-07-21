@@ -1,4 +1,8 @@
-from app.orders.schema.orders_schema import OrderSummerySchema, GetOrderItemsSchema, GetOrderIdResponseSchema
+from app.utility.response_utility import PaginationResponseSchema
+from app.orders.schema.orders_schema import (
+    OrderSummerySchema, GetOrderItemsSchema, GetOrderIdResponseSchema, GetOrderHistoryResponseSchema,
+    OrderBaseSchema
+)
 
 def get_id_order_transformer(summery, items):
     summery = (OrderSummerySchema
@@ -15,4 +19,22 @@ def get_id_order_transformer(summery, items):
                      .model_validate(data, from_attributes=True)
                      .model_dump()
                      )
+    return response_data
+
+
+def get_orders_history_transformer(query, pagination):
+    pagination = (PaginationResponseSchema
+                  .model_validate(pagination, from_attributes= True)
+                  .model_dump()
+    )
+    orders = [OrderBaseSchema
+              .model_validate(item, from_attributes=True)
+              .model_dump()
+              for item in query
+              ]
+    data = {**pagination, "orders": orders}
+    response_data = (GetOrderHistoryResponseSchema
+                     .model_validate(data, from_attributes=True)
+                     .model_dump()
+    )
     return response_data

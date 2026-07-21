@@ -2,8 +2,9 @@ from fastapi import HTTPException, status
 from datetime import date
 from sqlalchemy import func
 from app.models.common_models import Order, OrderItem, DailyMenu, CartItem, FoodItem
+from app.utility.response_utility import apply_pagination, apply_filters,PaginationRequestSchema
 from app.carts.service.carts_service import get_cart_items_service
-from app.orders.transformer.orders_transformer import  get_id_order_transformer
+from app.orders.transformer.orders_transformer import  get_id_order_transformer, get_orders_history_transformer
 
 
 def post_order_service(db,user):
@@ -36,6 +37,7 @@ def post_order_service(db,user):
                                 detail=f"ONLY {menu_item.available_qty} "
                                        f"QUANTITY OF '{item['name']}' IS AVAILABLE")    
     order = Order(user_id = user_id, 
+                  total_items = len(cart_items["items"]),
                   total_amount = cart_items.get("total_amount"), 
                   status = 'Preparing' 
                   )
@@ -53,7 +55,9 @@ def post_order_service(db,user):
                                         quantity = item['quantity'],
                                         item_price = item['price'] ))
         db.add_all(order_items) 
-        db.query(CartItem).filter(CartItem.cart_id == cart_id).delete(synchronize_session=False)
+        (db.query(CartItem)
+           .filter(CartItem.cart_id == cart_id)
+           .delete(synchronize_session=False)) #for multiple items delete in one query
         db.commit()
         db.refresh(order)
         return order
@@ -72,16 +76,16 @@ def get_id_order_service(id,db,user):
                         )
                .join(OrderItem, Order.id == OrderItem.order_id)
                .group_by(OrderItem.order_id, Order.user_id, Order.status)
-               .filter(Order.id == id,
-                       Order.user_id == user_id)
+               .filter(Order.id == id, Order.user_id == user_id)
                .first()
                )
     if summery is None:
-        return {"order_id":id,
-                "message":"NO ORDER FOUND",
-                "total_items": 0,
-                "total_amount":0,
-                "items": []}
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail= {"order_id":id,
+                                     "message":"NO ORDER FOUND",
+                                     "total_items": 0,
+                                     "total_amount":0,
+                                     "items": []})
     items = (db.query(Order.id, 
                       OrderItem.food_item_id,
                       FoodItem.name.label('food_name'),
@@ -91,15 +95,37 @@ def get_id_order_service(id,db,user):
                       )
              .join(OrderItem, Order.id == OrderItem.order_id)
              .join(FoodItem, OrderItem.food_item_id == FoodItem.id)
-             .filter(OrderItem.order_id == id,
-                     Order.user_id == user_id)
+             .filter(OrderItem.order_id == id, Order.user_id == user_id)
              .all()
              )
     if items is None:
-        return {"order_id":id,
-                "message":"NO ORDER FOUND",
-                "total_items": 0,
-                "total_amount":0,
-                "items": []}
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail= {"order_id":id,
+                                     "message":"NO ORDER FOUND",
+                                     "total_items": 0,
+                                     "total_amount":0,
+                                     "items": []})
     response_data = get_id_order_transformer(summery, items)
+    return response_data
+ 
+
+def get_orders_history_service(body, db, user):
+    order_ids = [order.id for order in user.orders]
+    query = (db.query( Order.id,
+                       Order.user_id,
+                       Order.status,
+                       Order.total_items,
+                       Order.total_amount,
+                       Order.created_at
+                       )
+              .filter(Order.id.in_(order_ids))
+              )
+    query = apply_filters(body=body,model=Order,query=query)
+    pagination = body.pagination
+    if pagination is None:
+        pagination = PaginationRequestSchema()
+    if body.pagination:
+       query, pagination = apply_pagination(body=body.pagination,query=query)
+    query = query.all()
+    response_data = get_orders_history_transformer(query, pagination)
     return response_data
