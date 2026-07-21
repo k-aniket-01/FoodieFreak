@@ -4,7 +4,8 @@ from app.database import get_db
 from app.utility.auth_utility import require_customer
 from app.orders.schema.orders_schema import GetOrderRequestSchema
 from app.orders.service.orders_service import (
-    post_order_service, get_id_order_service, get_orders_history_service
+    post_order_service, get_id_order_service, get_orders_history_service, cancel_order_service,
+    get_order_status_service
 )
 
 orders_router = APIRouter()
@@ -31,4 +32,20 @@ def get_orders_history(body:GetOrderRequestSchema,
                        user=Depends(require_customer)
                        ):
     response_data = get_orders_history_service(body,db,user)
+    return response_data
+
+@orders_router.patch('/order/{id:int}/cancel')
+def cancel_order(id:int,
+                 db:Session=Depends(get_db),
+                 user=Depends(require_customer)
+                 ):
+    response_data = cancel_order_service(id,db,user)
+    return response_data
+
+@orders_router.get('/order/{id:int}/status')
+def get_order_status(id:int,
+                     db:Session=Depends(get_db),
+                     user=Depends(require_customer)
+                     ):
+    response_data = get_order_status_service(id,db,user)
     return response_data

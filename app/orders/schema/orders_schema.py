@@ -44,3 +44,8 @@ class GetOrderRequestSchema(BaseModel):
     
 class GetOrderHistoryResponseSchema(PaginationResponseSchema):
     orders : list[OrderBaseSchema] = None
+    
+class GetOrderStatusTransformer(BaseModel):
+    id : Optional[int] = None
+    status : Optional[str] = None
+    created_at : Optional[datetime] = None

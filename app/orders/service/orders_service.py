@@ -4,8 +4,9 @@ from sqlalchemy import func
 from app.models.common_models import Order, OrderItem, DailyMenu, CartItem, FoodItem
 from app.utility.response_utility import apply_pagination, apply_filters,PaginationRequestSchema
 from app.carts.service.carts_service import get_cart_items_service
-from app.orders.transformer.orders_transformer import  get_id_order_transformer, get_orders_history_transformer
-
+from app.orders.transformer.orders_transformer import  (
+    get_id_order_transformer, get_orders_history_transformer, get_order_status_transformer
+)
 
 def post_order_service(db,user):
     user_id = user.id
@@ -110,15 +111,14 @@ def get_id_order_service(id,db,user):
  
 
 def get_orders_history_service(body, db, user):
-    order_ids = [order.id for order in user.orders]
-    query = (db.query( Order.id,
-                       Order.user_id,
-                       Order.status,
-                       Order.total_items,
-                       Order.total_amount,
-                       Order.created_at
-                       )
-              .filter(Order.id.in_(order_ids))
+    query = (db.query(Order.id,
+                      Order.user_id,
+                      Order.status,
+                      Order.total_items,
+                      Order.total_amount,
+                      Order.created_at
+                      )
+              .filter(Order.user_id == user.id)
               )
     query = apply_filters(body=body,model=Order,query=query)
     pagination = body.pagination
@@ -128,4 +128,43 @@ def get_orders_history_service(body, db, user):
        query, pagination = apply_pagination(body=body.pagination,query=query)
     query = query.all()
     response_data = get_orders_history_transformer(query, pagination)
+    return response_data
+
+
+def cancel_order_service(id, db, user):
+    query = (db.query(Order)
+             .filter(Order.id == id,
+                     Order.user_id == user.id)
+             .first()
+             )
+    if query is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, 
+                            detail="ORDER DETAILS NOT FOUND")
+    if query.status in ['COMPLETED','READY','PREPARING']:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail=f"'{query.status}' ORDER CAN NOT BE CANCELLED")
+    if query.status == 'CANCELED':
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail="ORDER IS ALREADY CANCELED")
+    try:    
+        query.status = 'CANCELED'
+        db.commit()
+        db.refresh(query)
+        return query
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                            detail=f"{e}")
+        
+
+def get_order_status_service(id, db, user):
+    order = (db.query(Order)
+             .filter(Order.id == id,
+                     Order.user_id == user.id)
+             .first()
+             )
+    if order is None: 
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail='ORDER NOT FOUND')
+    response_data = get_order_status_transformer(order)
     return response_data
