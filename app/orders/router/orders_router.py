@@ -5,7 +5,7 @@ from app.utility.auth_utility import require_customer
 from app.orders.schema.orders_schema import GetOrderRequestSchema
 from app.orders.service.orders_service import (
     post_order_service, get_id_order_service, get_orders_history_service, cancel_order_service,
-    get_order_status_service
+    get_order_status_service, get_active_orders_service
 )
 
 orders_router = APIRouter()
@@ -49,3 +49,11 @@ def get_order_status(id:int,
                      ):
     response_data = get_order_status_service(id,db,user)
     return response_data
+
+@orders_router.get('/get/orders/active')
+def get_active_orders(db:Session=Depends(get_db),
+                      user=Depends(require_customer)
+                      ):
+    response_data = get_active_orders_service(db,user)
+    return response_data
+

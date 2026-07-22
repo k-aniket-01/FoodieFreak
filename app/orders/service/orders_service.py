@@ -1,11 +1,13 @@
 from fastapi import HTTPException, status
 from datetime import date
 from sqlalchemy import func
+from app.utility.enums import OrderStatusEnum
 from app.models.common_models import Order, OrderItem, DailyMenu, CartItem, FoodItem
 from app.utility.response_utility import apply_pagination, apply_filters,PaginationRequestSchema
 from app.carts.service.carts_service import get_cart_items_service
 from app.orders.transformer.orders_transformer import  (
-    get_id_order_transformer, get_orders_history_transformer, get_order_status_transformer
+    get_id_order_transformer, get_orders_history_transformer, get_order_status_transformer,
+    get_active_orders_transformer
 )
 
 def post_order_service(db,user):
@@ -40,7 +42,7 @@ def post_order_service(db,user):
     order = Order(user_id = user_id, 
                   total_items = len(cart_items["items"]),
                   total_amount = cart_items.get("total_amount"), 
-                  status = 'Preparing' 
+                  status = OrderStatusEnum.PREPARING 
                   )
     try:
         db.add(order)
@@ -140,14 +142,14 @@ def cancel_order_service(id, db, user):
     if query is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, 
                             detail="ORDER DETAILS NOT FOUND")
-    if query.status in ['COMPLETED','READY','PREPARING']:
+    if query.status in [OrderStatusEnum.COMPLETED, OrderStatusEnum.READY, OrderStatusEnum.PREPARING]:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
                             detail=f"'{query.status}' ORDER CAN NOT BE CANCELLED")
-    if query.status == 'CANCELED':
+    if query.status == OrderStatusEnum.CANCELLED:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
-                            detail="ORDER IS ALREADY CANCELED")
+                            detail="ORDER IS ALREADY CANCELLED")
     try:    
-        query.status = 'CANCELED'
+        query.status = OrderStatusEnum.CANCELLED
         db.commit()
         db.refresh(query)
         return query
@@ -168,3 +170,26 @@ def get_order_status_service(id, db, user):
                             detail='ORDER NOT FOUND')
     response_data = get_order_status_transformer(order)
     return response_data
+
+def get_active_orders_service(db, user):
+    orders = (db.query(Order.id,
+                       Order.user_id,
+                       Order.total_amount,
+                       Order.status,
+                       Order.total_items,
+                       Order.created_at)
+              .filter(Order.status.in_([OrderStatusEnum.PENDING, OrderStatusEnum.PREPARING, OrderStatusEnum.READY]),
+                      Order.user_id == user.id)
+              .all()
+              )
+    if len(orders)==0:
+        return {
+                    "page": 1,
+                    "per_page": 10,
+                    "total_records": 0,
+                    "total_pages": 0,
+                    "orders": []
+                }
+    response_data = get_active_orders_transformer(orders)
+    return response_data
+    

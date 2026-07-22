@@ -1,7 +1,10 @@
 from datetime import datetime
 from app.database import Base
-from sqlalchemy import Column, String, Integer, ForeignKey, Boolean, Date, DateTime, UniqueConstraint
+from sqlalchemy import (
+    Column, String, Integer, ForeignKey, Boolean, Date, DateTime, UniqueConstraint,Enum
+)
 from sqlalchemy.orm import relationship
+from app.utility.enums import OrderStatusEnum 
 
 class Role(Base):
     __tablename__ = 'roles'
@@ -97,8 +100,8 @@ class Order(Base):
     user_id = Column(Integer, ForeignKey("users.id"))
     total_items = Column(Integer)
     total_amount = Column(Integer)
-    status = Column(String(50))
-    created_at = Column(DateTime, default=datetime.now())
+    status = Column(Enum(OrderStatusEnum, name='order_status'),nullable=False,default=OrderStatusEnum.PENDING)
+    created_at = Column(DateTime, default=datetime.now)
 
     user = relationship("User", back_populates="orders")
     items = relationship("OrderItem", back_populates="order")

@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 from typing import Optional
 from datetime import datetime
+from app.utility.enums import OrderStatusEnum
 from app.utility.response_utility import PaginationRequestSchema, PaginationResponseSchema
 
 class OrderBaseSchema(BaseModel):
@@ -8,7 +9,7 @@ class OrderBaseSchema(BaseModel):
     user_id : Optional[int] = None
     total_items : Optional[int] = None
     total_amount : Optional[int] = None
-    status : Optional[str] = None
+    status : Optional[OrderStatusEnum] = None
     created_at : Optional[datetime] = None
 
     
@@ -22,7 +23,7 @@ class OrderItemsBaseSchema(BaseModel):
 class OrderSummerySchema(BaseModel):
     order_id : Optional[int] = None
     user_id : Optional[int] = None
-    status : Optional[str] = None 
+    status : Optional[OrderStatusEnum] = None 
     total_items : Optional[int] = None
     total_amount : Optional[int] = None
     
@@ -39,13 +40,13 @@ class GetOrderIdResponseSchema(OrderSummerySchema):
     
 class GetOrderRequestSchema(BaseModel):
     id : Optional[int] = None
-    status : Optional[str] = None
+    status : Optional[OrderStatusEnum] = None
     pagination: Optional[PaginationRequestSchema] = None
     
 class GetOrderHistoryResponseSchema(PaginationResponseSchema):
     orders : list[OrderBaseSchema] = None
     
-class GetOrderStatusTransformer(BaseModel):
+class GetOrderStatusResponseSchema(BaseModel):
     id : Optional[int] = None
-    status : Optional[str] = None
+    status : Optional[OrderStatusEnum] = None
     created_at : Optional[datetime] = None
