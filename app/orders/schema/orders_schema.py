@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 from typing import Optional
-from datetime import datetime
-from app.utility.enums import OrderStatusEnum
+from datetime import date, datetime
+from app.utility.enums import OrderStatusEnum, FilterOrderStatusEnum, SortEnum, CanteenOrderSortByEnum
 from app.utility.response_utility import PaginationRequestSchema, PaginationResponseSchema
 
 class OrderBaseSchema(BaseModel):
@@ -50,3 +50,15 @@ class GetOrderStatusResponseSchema(BaseModel):
     id : Optional[int] = None
     status : Optional[OrderStatusEnum] = None
     created_at : Optional[datetime] = None
+    
+    
+class GetCanteenOrdersRequestSchema(BaseModel):
+    page: int = 1
+    per_page: int = 10
+    status: FilterOrderStatusEnum = FilterOrderStatusEnum.ALL
+    customer_id: int | None = None
+    order_id: int | None = None
+    start_date: date | None = None
+    end_date: date | None = None
+    sort_by: CanteenOrderSortByEnum = CanteenOrderSortByEnum.CREATED_AT
+    sort_order: SortEnum = SortEnum.DESC

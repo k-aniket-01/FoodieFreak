@@ -1,7 +1,7 @@
 from fastapi import HTTPException, status
-from datetime import date
+from datetime import date, datetime, time
 from sqlalchemy import func
-from app.utility.enums import OrderStatusEnum
+from app.utility.enums import OrderStatusEnum, SortEnum, FilterOrderStatusEnum
 from app.models.common_models import Order, OrderItem, DailyMenu, CartItem, FoodItem
 from app.utility.response_utility import apply_pagination, apply_filters,PaginationRequestSchema
 from app.carts.service.carts_service import get_cart_items_service
@@ -191,5 +191,40 @@ def get_active_orders_service(db, user):
                     "orders": []
                 }
     response_data = get_active_orders_transformer(orders)
+    return response_data
+    
+    
+def get_canteen_orders_service(db, user ,parameters):
+    query = db.query(Order)
+    filters = []
+    
+    if parameters.status and parameters.status != FilterOrderStatusEnum.ALL:
+        filters.append(Order.status == parameters.status)
+        
+    if parameters.customer_id:
+        filters.append(Order.user_id == parameters.customer_id)
+        
+    if parameters.order_id:
+        filters.append(Order.id == parameters.order_id)
+        
+    if parameters.start_date: 
+        filters.append(Order.created_at >= datetime.combine(parameters.start_date, time.min))
+        
+    if parameters.end_date:
+        filters.append(Order.created_at <= datetime.combine(parameters.end_date, time.max))
+            
+    if filters:
+        query = query.filter(*filters)
+    
+    sort_column = getattr(Order, parameters.sort_by, None)
+    if sort_column is None:
+        raise HTTPException(status_code=400, detail="Invalid sort_by")
+    query = query.order_by(sort_column.asc() 
+                           if parameters.sort_order == SortEnum.ASC 
+                           else sort_column.desc())
+    
+    query, pagination = apply_pagination(body = parameters, query= query)
+    query = query.all()
+    response_data = get_orders_history_transformer(query, pagination)
     return response_data
     

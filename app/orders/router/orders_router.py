@@ -1,11 +1,11 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from app.database import get_db
-from app.utility.auth_utility import require_customer
-from app.orders.schema.orders_schema import GetOrderRequestSchema
+from app.utility.auth_utility import require_customer, require_owner
+from app.orders.schema.orders_schema import GetOrderRequestSchema, GetCanteenOrdersRequestSchema
 from app.orders.service.orders_service import (
     post_order_service, get_id_order_service, get_orders_history_service, cancel_order_service,
-    get_order_status_service, get_active_orders_service
+    get_order_status_service, get_active_orders_service, get_canteen_orders_service
 )
 
 orders_router = APIRouter()
@@ -57,3 +57,11 @@ def get_active_orders(db:Session=Depends(get_db),
     response_data = get_active_orders_service(db,user)
     return response_data
 
+
+@orders_router.get('/get/canteen/orders')
+def get_canteen_orders(db : Session = Depends(get_db),
+                       user = Depends(require_owner),
+                       filters: GetCanteenOrdersRequestSchema = Depends()
+                       ):
+    response_data = get_canteen_orders_service(db, user, filters)
+    return response_data
