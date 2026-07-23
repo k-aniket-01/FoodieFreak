@@ -2,12 +2,12 @@ from fastapi import HTTPException, status
 from datetime import date, datetime, time
 from sqlalchemy import func
 from app.utility.enums import OrderStatusEnum, SortEnum, FilterOrderStatusEnum
-from app.models.common_models import Order, OrderItem, DailyMenu, CartItem, FoodItem
+from app.models.common_models import Order, OrderItem, DailyMenu, CartItem, FoodItem, User
 from app.utility.response_utility import apply_pagination, apply_filters,PaginationRequestSchema
 from app.carts.service.carts_service import get_cart_items_service
 from app.orders.transformer.orders_transformer import  (
     get_id_order_transformer, get_orders_history_transformer, get_order_status_transformer,
-    get_active_orders_transformer
+    get_active_orders_transformer, get_canteen_orders_details_transformer
 )
 
 def post_order_service(db,user):
@@ -183,12 +183,11 @@ def get_active_orders_service(db, user):
               .all()
               )
     if len(orders)==0:
-        return {
-                    "page": 1,
-                    "per_page": 10,
-                    "total_records": 0,
-                    "total_pages": 0,
-                    "orders": []
+        return {"page": 1,
+                "per_page": 10,
+                "total_records": 0,
+                "total_pages": 0,
+                "orders": []
                 }
     response_data = get_active_orders_transformer(orders)
     return response_data
@@ -228,3 +227,30 @@ def get_canteen_orders_service(db, user ,parameters):
     response_data = get_orders_history_transformer(query, pagination)
     return response_data
     
+    
+def get_canteen_orders_details_service(id, db, user):
+    order = (db.query(Order.id,
+                      User.id.label("customer_id"),
+                      User.name.label("customer_name"),
+                      User.email.label("customer_email"),
+                      Order.status,
+                      Order.total_items,
+                      Order.total_amount,
+                      Order.created_at,
+                      OrderItem.food_item_id.label("food_item_id"),
+                      FoodItem.name.label("food_name"),
+                      OrderItem.quantity,
+                      OrderItem.item_price.label("price"),
+                      (OrderItem.quantity * OrderItem.item_price).label("sub_total")
+                      )
+             .join(User, Order.user_id == User.id)
+             .join(OrderItem, Order.id == OrderItem.order_id)
+             .join(FoodItem, OrderItem.food_item_id == FoodItem.id)
+             .filter(Order.id == id)
+             .all()
+             )
+    if len(order) == 0:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail='ORDER NOT FOUND')
+    response_data = get_canteen_orders_details_transformer(order)
+    return response_data

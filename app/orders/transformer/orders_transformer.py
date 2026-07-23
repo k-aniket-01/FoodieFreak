@@ -1,7 +1,8 @@
 from app.utility.response_utility import PaginationResponseSchema
 from app.orders.schema.orders_schema import (
     OrderSummerySchema, GetOrderItemsSchema, GetOrderIdResponseSchema, GetOrderHistoryResponseSchema,
-    OrderBaseSchema, GetOrderStatusResponseSchema
+    OrderBaseSchema, GetOrderStatusResponseSchema, GetCanteenOrderDetailResponseSchema, ItemsSchema, 
+    CustomerSchema, GetCanteenSummerySchema
 )
 
 def get_id_order_transformer(summery, items):
@@ -55,3 +56,16 @@ def get_active_orders_transformer(data):
                      for order in data
                      )
     return response_data 
+
+
+def get_canteen_orders_details_transformer(data):
+    items = (ItemsSchema.model_validate(item, from_attributes=True).model_dump() 
+             for item in data)
+    customer = (CustomerSchema.model_validate(data[0], from_attributes=True).model_dump())
+    summery = (GetCanteenSummerySchema.model_validate(data[0], from_attributes=True).model_dump())
+    data = {**summery, "items":items, "customer":customer}
+    response_data =(GetCanteenOrderDetailResponseSchema
+                    .model_validate(data, from_attributes=True)
+                    .model_dump()
+                    )
+    return response_data

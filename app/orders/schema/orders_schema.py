@@ -62,3 +62,26 @@ class GetCanteenOrdersRequestSchema(BaseModel):
     end_date: date | None = None
     sort_by: CanteenOrderSortByEnum = CanteenOrderSortByEnum.CREATED_AT
     sort_order: SortEnum = SortEnum.DESC
+    
+class ItemsSchema(BaseModel):
+    food_item_id : Optional[int] = None
+    food_name : Optional[str] = None
+    quantity : Optional[int] = None
+    price : Optional[int] = None
+    sub_total : Optional[int] = None    
+    
+class CustomerSchema(BaseModel):
+    customer_id : Optional[int] = None
+    customer_name : Optional[str] = None
+    customer_email : Optional[str] = None
+    
+class GetCanteenSummerySchema(BaseModel):
+    id : Optional[int] = None
+    status : Optional[str] = None
+    total_items : Optional[int] = None
+    total_amount : Optional[int] = None
+    created_at : Optional[datetime] = None
+
+class GetCanteenOrderDetailResponseSchema(GetCanteenSummerySchema):
+    customer : Optional[CustomerSchema] = None
+    items : Optional[list[ItemsSchema]] = None
