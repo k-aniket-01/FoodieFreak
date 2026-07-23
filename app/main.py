@@ -8,7 +8,18 @@ from app.carts.router.carts_router import carts_router
 from app.orders.router.orders_router import orders_router
 # from test import test_router
 
-app = FastAPI()
+
+app = FastAPI(
+    title="FoodieFreak",
+    version="1.0.0",
+    description="""
+                    Live : https://foodiefreak.onrender.com/docs
+                """,
+    contact={
+        "name": "Aniket Khomane",
+        "url": "https://github.com/k-aniket-01/FoodieFreak/tree/FastAPI",
+    }
+)
 #uvicorn app.main:app --reload
 
 @app.get("/")
