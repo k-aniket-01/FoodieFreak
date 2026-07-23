@@ -11,6 +11,10 @@ from app.orders.router.orders_router import orders_router
 app = FastAPI()
 #uvicorn app.main:app --reload
 
+@app.get("/")
+def root():
+    return {"message": "Foodie Freak API is running use swagger docs to explore"}
+
 app.include_router(auth_router, tags=["Authentication Routers"])
 app.include_router(user_router, tags=["User Routers"])
 app.include_router(categories_router, tags=["Categories Routers"])
