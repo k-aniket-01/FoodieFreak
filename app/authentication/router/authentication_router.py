@@ -7,7 +7,8 @@ from app.authentication.schema.authentication_schema import (
     
 )
 from app.authentication.service.authentication_service import (
-    auth_register_service, auth_login_service, auth_update_pwd_service, auth_me_service, 
+    auth_register_service, auth_login_service, auth_update_pwd_service, 
+    auth_me_service, auth_refresh_service
 )
 
 auth_router = APIRouter()
@@ -32,6 +33,14 @@ async def auth_login(request : Request, db:Session=Depends(get_db)):
 def auth_login(body:AuthLoginRequestSchema, db:Session=Depends(get_db)):
     response = auth_login_service(body, db)
     return response 
+
+
+@auth_router.post('/auth/refresh')
+def auth_refresh(token:str, db:Session=Depends(get_db)):
+    response = auth_refresh_service(token,db)
+    return response
+
+
 
 
 @auth_router.patch('/update/password')

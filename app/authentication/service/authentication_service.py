@@ -1,10 +1,14 @@
+from datetime import timedelta
+from fastapi import Depends
+from app.utility.auth_utility import get_current_user, REFRESH_TOKEN_EXPIRE_DAYS
 from sqlalchemy import or_, and_
 from app.models.common_models import User, UserRole
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
 from sqlalchemy.exc import IntegrityError
+from app.database import redis_cache
 from app.utility.auth_utility import (
-    hash_password, verify_password, create_jwt_token, get_current_user
+    hash_password, verify_password, create_access_token, create_refresh_token, decode_token
 )
 from app.authentication.schema.authentication_schema import (
     AuthRegisterRequestSchema, AuthLoginRequestSchema, AuthUpdatePassRequestSchema
@@ -41,10 +45,14 @@ def auth_login_service(data:AuthLoginRequestSchema, db:Session):
     if user:
         verified = verify_password(data.password, user.password)
         if verified:
+            access_token, _ = create_access_token(data={"sub":user.email})
+            refresh_token,refresh_jti = create_refresh_token(data={"sub":user.email})
             data = {
-                "access_token" :create_jwt_token(data={"sub":user.email}),
-                "token_type" : "Bearer"
+                "token_type" : "Bearer",
+                "access_token" : access_token,
+                "refresh_token" : refresh_token,
             }
+            redis_cache.setex(f"refresh:{refresh_jti}",timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS), user.email)
             response = auth_login_transformer(data)
             return response
         else:
@@ -53,6 +61,39 @@ def auth_login_service(data:AuthLoginRequestSchema, db:Session):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="USER NOT FOUND")            
         
         
+def auth_refresh_service(token,db, user=Depends(get_current_user)):
+    payload = decode_token(token)
+    if payload is None:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+                                    detail='INVALID TOKEN TYPE')
+    if payload['type'] != 'refresh' :
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+                            detail='INVALID TOKEN TYPE')
+        
+    stored_email = redis_cache.get(f"refresh:{payload['jti']}")
+    if stored_email is None or stored_email != payload['sub']:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+                            detail='INVALID TOKEN')
+        
+    user = (db.query(User).filter(
+                and_( User.email == payload.get("sub"), User.is_active == True)
+                )).first()
+    if not user:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+                            detail="INVALID USER")
+    access_token, _ = create_access_token(data={"sub":user.email})
+    refresh_token,refresh_jti = create_refresh_token(data={"sub":user.email})
+    data = {
+        "token_type" : "Bearer",
+        "access_token" : access_token,
+        "refresh_token" : refresh_token,
+    }
+    redis_cache.setex(f"refresh:{refresh_jti}",timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS), user.email)
+    redis_cache.delete(f"refresh:{payload.get('jti')}")
+    response = auth_login_transformer(data)
+    return response
+    
+    
 def auth_update_pwd_service(data:AuthUpdatePassRequestSchema, user, db:Session):
     verified = verify_password(data.current_password, user.password)
     if verified:

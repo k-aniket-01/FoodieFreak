@@ -9,6 +9,7 @@ from dotenv import load_dotenv
 from fastapi.security import OAuth2PasswordBearer
 from app.models.common_models import *
 import os
+import uuid
 
 load_dotenv()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl='/auth/login')
@@ -16,6 +17,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl='/auth/login')
 SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 15   
+REFRESH_TOKEN_EXPIRE_DAYS = 2
 
 
 pwd_context = CryptContext(
@@ -29,11 +31,25 @@ def hash_password(password:str):
 def verify_password(plain, hashed):
     return pwd_context.verify(plain, hashed)
 
-def create_jwt_token(data:dict, expires_minutes:int = ACCESS_TOKEN_EXPIRE_MINUTES):
+def create_access_token(data:dict, expires_minutes:int = ACCESS_TOKEN_EXPIRE_MINUTES):
     to_encode = data.copy()
+    jti = str(uuid.uuid4())
     expire = datetime.now(timezone.utc) + timedelta(minutes=expires_minutes)
     to_encode.update({"exp":expire})
-    return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    to_encode["type"] = "access"
+    to_encode["jti"] = jti 
+    access_token = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return access_token, jti
+
+def create_refresh_token(data:dict, expires_days:int=REFRESH_TOKEN_EXPIRE_DAYS):
+    to_encode = data.copy()
+    jti = str(uuid.uuid4())
+    expire = datetime.now(timezone.utc) + timedelta(days=expires_days)
+    to_encode.update({"exp":expire})
+    to_encode["type"] = "refresh"
+    to_encode["jti"] = jti
+    refresh_token = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return refresh_token, jti
 
 def decode_token(token:str):
     try:
