@@ -14,6 +14,7 @@ app = FastAPI(
     version="1.0.0",
     description="""
                     Live : https://foodiefreak.onrender.com/docs
+                    Docs : https://docs.google.com/document/d/1I_EDXjYwqHvv7pQIcKD75utlpNwWkro4G7vsFGFwGiM/edit?usp=sharing
                 """,
     contact={
         "name": "Aniket Khomane",

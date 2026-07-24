@@ -42,7 +42,7 @@ def post_order_service(db,user):
     order = Order(user_id = user_id, 
                   total_items = len(cart_items["items"]),
                   total_amount = cart_items.get("total_amount"), 
-                  status = OrderStatusEnum.PREPARING 
+                  status = OrderStatusEnum.PENDING 
                   )
     try:
         db.add(order)
@@ -254,3 +254,38 @@ def get_canteen_orders_details_service(id, db, user):
                             detail='ORDER NOT FOUND')
     response_data = get_canteen_orders_details_transformer(order)
     return response_data
+
+
+def patch_canteen_order_status_service(id,db,transition):
+    ALLOWED_TRANSITIONS = {
+        OrderStatusEnum.PENDING :{OrderStatusEnum.PREPARING, OrderStatusEnum.CANCELLED},
+        OrderStatusEnum.PREPARING:{OrderStatusEnum.READY, OrderStatusEnum.COMPLETED},
+        OrderStatusEnum.READY:{OrderStatusEnum.COMPLETED},
+        OrderStatusEnum.COMPLETED:set(),
+        OrderStatusEnum.CANCELLED:set()
+    }
+    order = (db.query(Order).filter(Order.id == id).first())
+    
+    if order is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail='ORDER NOT FOUND')
+    
+    if order.status == transition:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail=f"ORDER IS ALREADY BEING {order.status}")
+        
+    allowed = ALLOWED_TRANSITIONS.get(order.status, set())
+    if transition not in allowed:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail=f"{order.status} ORDER CANNOT CHANGE TO {transition}"
+                                   f"ITS ONLY CAN BE {[state.value for state in allowed]}")
+    order.status = transition
+    try:
+        db.commit()
+        db.refresh(order)
+        return order
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                            detail=f"{e}")
+    

@@ -2,11 +2,12 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.utility.auth_utility import require_customer, require_owner
+from app.utility.enums import OrderStatusEnum
 from app.orders.schema.orders_schema import GetOrderRequestSchema, GetCanteenOrdersRequestSchema
 from app.orders.service.orders_service import (
     post_order_service, get_id_order_service, get_orders_history_service, cancel_order_service,
     get_order_status_service, get_active_orders_service, get_canteen_orders_service,
-    get_canteen_orders_details_service
+    get_canteen_orders_details_service, patch_canteen_order_status_service
 )
 
 orders_router = APIRouter()
@@ -58,7 +59,6 @@ def get_active_orders(db:Session=Depends(get_db),
     response_data = get_active_orders_service(db,user)
     return response_data
 
-
 @orders_router.get('/get/canteen/orders')
 def get_canteen_orders(db : Session = Depends(get_db),
                        user = Depends(require_owner),
@@ -67,11 +67,46 @@ def get_canteen_orders(db : Session = Depends(get_db),
     response_data = get_canteen_orders_service(db, user, filters)
     return response_data
 
-
 @orders_router.get('/canteen/order{id:int}')
 def get_canteen_order_details(id:int,
                               db:Session=Depends(get_db),
                               user=Depends(require_owner)
                               ):
     response_data = get_canteen_orders_details_service(id, db, user)
+    return response_data
+
+@orders_router.patch('/patch/canteen/order/{id:int}/prepare')
+def patch_canteen_order_prepare(id:int,
+                                db:Session=Depends(get_db),
+                                user=Depends(require_owner)
+                                ):
+    transition = OrderStatusEnum.PREPARING
+    response_data = patch_canteen_order_status_service(id,db,transition)
+    return response_data
+
+@orders_router.patch('/patch/canteen/order/{id:int}/ready')
+def patch_canteen_order_ready(id:int,
+                              db:Session=Depends(get_db),
+                              user=Depends(require_owner)
+                              ):
+    transition = OrderStatusEnum.READY
+    response_data = patch_canteen_order_status_service(id,db,transition)
+    return response_data
+
+@orders_router.patch("/patch/canteen/order/{id:int}/complete")
+def patch_canteen_order_complete(id:int,
+                                 db:Session=Depends(get_db),
+                                 user=Depends(require_owner)
+                                 ):
+    transition = OrderStatusEnum.COMPLETED
+    response_data = patch_canteen_order_status_service(id,db,transition)
+    return response_data
+
+@orders_router.patch('/patch/canteen/order/{id:int}/cancel')
+def patch_canteen_order_cancel(id:int,
+                               db:Session=Depends(get_db),
+                               user=Depends(require_owner)
+                               ):
+    transition = OrderStatusEnum.CANCELLED
+    response_data = patch_canteen_order_status_service(id,db,transition)
     return response_data
