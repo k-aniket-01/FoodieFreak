@@ -1,4 +1,5 @@
-from fastapi import FastAPI 
+from fastapi import FastAPI
+from fastapi.responses import HTMLResponse 
 from app.authentication.router.authentication_router import auth_router
 from app.user.router.user_router import user_router
 from app.categories.router.categories_router import categories_router
@@ -23,9 +24,21 @@ app = FastAPI(
 )
 #uvicorn app.main:app --reload
 
-@app.get("/")
+@app.get("/", response_class=HTMLResponse)
 def root():
-    return {"message": "Foodie Freak API is running use swagger docs to explore"}
+    return """
+    <html>
+        <head>
+            <title>FoodieFreak</title>
+        </head>
+        <body>
+            <h2>FoodieFreak is running</h2>
+            <p>
+                <a href="/docs">Open Swagger Documentation</a>
+            </p>
+        </body>
+    </html>
+    """
 
 app.include_router(auth_router, tags=["Authentication Routers"])
 app.include_router(user_router, tags=["User Routers"])

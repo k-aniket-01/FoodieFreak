@@ -40,10 +40,12 @@ class AuthLoginRequestSchema(BaseModel):
     
 
 class AuthLoginResponseSchema(BaseModel):
+    token_type : str
     access_token : str
     refresh_token :str
-    token_type : str
         
+class RefreshTokenRequestSchema(BaseModel):
+    refresh_token : str
     
 class RoleSchema(BaseModel):
     id: int

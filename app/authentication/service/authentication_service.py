@@ -45,14 +45,14 @@ def auth_login_service(data:AuthLoginRequestSchema, db:Session):
     if user:
         verified = verify_password(data.password, user.password)
         if verified:
-            access_token, _ = create_access_token(data={"sub":user.email})
-            refresh_token,refresh_jti = create_refresh_token(data={"sub":user.email})
+            access_token, _ = create_access_token(data={"sub":str(user.id)})
+            refresh_token,refresh_jti = create_refresh_token(data={"sub":str(user.id)})
             data = {
                 "token_type" : "Bearer",
                 "access_token" : access_token,
                 "refresh_token" : refresh_token,
             }
-            redis_cache.setex(f"refresh:{refresh_jti}",timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS), user.email)
+            redis_cache.setex(f"refresh:{refresh_jti}",timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS), user.id)
             response = auth_login_transformer(data)
             return response
         else:
@@ -61,38 +61,34 @@ def auth_login_service(data:AuthLoginRequestSchema, db:Session):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="USER NOT FOUND")            
         
         
-def auth_refresh_service(token,db, user=Depends(get_current_user)):
-    payload = decode_token(token)
+def auth_refresh_service(body,db):
+    payload = decode_token(body.refresh_token)
     if payload is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
-                                    detail='INVALID TOKEN TYPE')
+                                    detail='INVALID TOKEN')
     if payload['type'] != 'refresh' :
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                             detail='INVALID TOKEN TYPE')
         
-    stored_email = redis_cache.get(f"refresh:{payload['jti']}")
+    stored_email = redis_cache.getdel(f"refresh:{payload['jti']}")
     if stored_email is None or stored_email != payload['sub']:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                             detail='INVALID TOKEN')
-        
-    user = (db.query(User).filter(
-                and_( User.email == payload.get("sub"), User.is_active == True)
-                )).first()
+
+    user = db.query(User).filter( User.id == payload.get("sub"), User.is_active == True).first()
     if not user:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                             detail="INVALID USER")
-    access_token, _ = create_access_token(data={"sub":user.email})
-    refresh_token,refresh_jti = create_refresh_token(data={"sub":user.email})
+    access_token, _ = create_access_token(data={"sub":str(user.id)})
+    refresh_token,refresh_jti = create_refresh_token(data={"sub":str(user.id)})
     data = {
         "token_type" : "Bearer",
         "access_token" : access_token,
         "refresh_token" : refresh_token,
     }
-    redis_cache.setex(f"refresh:{refresh_jti}",timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS), user.email)
-    redis_cache.delete(f"refresh:{payload.get('jti')}")
+    redis_cache.setex(f"refresh:{refresh_jti}",timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS), user.id)
     response = auth_login_transformer(data)
     return response
-    
     
 def auth_update_pwd_service(data:AuthUpdatePassRequestSchema, user, db:Session):
     verified = verify_password(data.current_password, user.password)

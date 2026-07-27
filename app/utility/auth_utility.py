@@ -67,10 +67,10 @@ def get_current_user(token:str =Depends(oauth2_scheme), db:Session=Depends(get_d
     payload = decode_token(token)
     if payload is None:
         raise cred_exception
-    email = payload.get("sub")
-    if email is None:
+    user_id = int(payload.get("sub"))
+    if user_id is None:
         raise cred_exception
-    user = db.query(User).filter(and_(User.email == email, User.is_active == True)).first()
+    user = db.query(User).filter(and_(User.id == user_id, User.is_active == True)).first()
     if user is None:
         raise cred_exception
     return user

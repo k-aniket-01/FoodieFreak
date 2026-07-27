@@ -3,8 +3,8 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.utility.auth_utility import get_current_user
 from app.authentication.schema.authentication_schema import (
-    AuthRegisterRequestSchema, AuthLoginRequestSchema, AuthUpdatePassRequestSchema,
-    
+    AuthRegisterRequestSchema, AuthLoginRequestSchema, AuthUpdatePassRequestSchema, 
+    RefreshTokenRequestSchema   
 )
 from app.authentication.service.authentication_service import (
     auth_register_service, auth_login_service, auth_update_pwd_service, 
@@ -36,11 +36,9 @@ def auth_login(body:AuthLoginRequestSchema, db:Session=Depends(get_db)):
 
 
 @auth_router.post('/auth/refresh')
-def auth_refresh(token:str, db:Session=Depends(get_db)):
-    response = auth_refresh_service(token,db)
+def auth_refresh(body:RefreshTokenRequestSchema, db:Session=Depends(get_db)):
+    response = auth_refresh_service(body,db)
     return response
-
-
 
 
 @auth_router.patch('/update/password')
