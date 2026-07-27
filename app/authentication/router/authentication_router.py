@@ -8,7 +8,7 @@ from app.authentication.schema.authentication_schema import (
 )
 from app.authentication.service.authentication_service import (
     auth_register_service, auth_login_service, auth_update_pwd_service, 
-    auth_me_service, auth_refresh_service
+    auth_me_service, auth_refresh_service, auth_logout_service
 )
 
 auth_router = APIRouter()
@@ -54,3 +54,9 @@ def auth_me(user=Depends(get_current_user)):
     response = auth_me_service(user)
     return response
 
+
+@auth_router.post('/auth/logout')
+def auth_logout(body:RefreshTokenRequestSchema,
+                user=Depends(get_current_user)):
+    response = auth_logout_service(body,user)
+    return response

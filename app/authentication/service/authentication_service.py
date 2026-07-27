@@ -108,3 +108,19 @@ def auth_update_pwd_service(data:AuthUpdatePassRequestSchema, user, db:Session):
 def auth_me_service(data):
     response = auth_me_transformer(data)
     return response
+
+
+def auth_logout_service(body,user):
+    payload = decode_token(body.refresh_token)
+    if not payload:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+                            detail='INVALID TOKEN')
+    if payload["type"] != 'refresh':
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+                            detail='INVALID TOKEN TYPE')
+    if user.id != int(payload['sub']):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+                            detail='INVALID TOKEN')
+    redis_cache.delete(f"refresh:{payload['jti']}")
+    return True
+    

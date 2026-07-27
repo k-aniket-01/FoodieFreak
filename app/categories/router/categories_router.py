@@ -26,23 +26,23 @@ def get_categories(db:Session= Depends(get_db)
     response = get_categories_service(db)
     return response
 
-@categories_router.get('/get/category/{id}')
-def get_category_id(id,
+@categories_router.get('/get/category/{id:int}')
+def get_category_id(id:int,
                     db:Session=Depends(get_db)
                      ):
     response = get_category_id_service(id,db)
     return response
 
-@categories_router.put('/put/category/{id}')
-def put_category_id(id,body:PutCategoryIdSchema,
+@categories_router.put('/put/category/{id:int}')
+def put_category_id(id:int,body:PutCategoryIdSchema,
                     db:Session=Depends(get_db),
                     user=Depends(require_owner)
                     ):
     response = put_category_id_service(id,body,db)
     return response
 
-@categories_router.delete('/delete/category/{id}')
-def delete_category_id(id,
+@categories_router.delete('/delete/category/{id:int}')
+def delete_category_id(id:int,
                        db:Session=Depends(get_db),
                        user=Depends(require_owner)
                        ):

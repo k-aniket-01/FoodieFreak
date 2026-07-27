@@ -17,7 +17,7 @@ def get_user_profile(user=Depends(get_current_user)
     return response 
 
 
-@user_router.put('/get/user/profile')
+@user_router.put('/put/user/profile')
 def update_user_profile(body:UserProfileUpdateRequestSchema,
                         user = Depends(get_current_user),
                         db:Session = Depends(get_db)
