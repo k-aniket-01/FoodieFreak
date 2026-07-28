@@ -1,3 +1,4 @@
+Python==3.10.12
 aiosmtplib==5.1.2
 alembic==1.18.4
 annotated-doc==0.0.4
