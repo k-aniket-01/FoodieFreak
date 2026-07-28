@@ -78,3 +78,10 @@ class AuthUpdatePassRequestSchema(BaseModel):
     current_password : str
     new_password : str
     confirm_password : str 
+    
+class ForgotPasswordRequestSchema(BaseModel):
+    email : EmailStr
+    
+class ResetPasswordRequestSchema(BaseModel):
+    password : str
+    confirm_pass : str

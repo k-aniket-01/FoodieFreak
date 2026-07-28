@@ -4,11 +4,12 @@ from app.database import get_db
 from app.utility.auth_utility import get_current_user
 from app.authentication.schema.authentication_schema import (
     AuthRegisterRequestSchema, AuthLoginRequestSchema, AuthUpdatePassRequestSchema, 
-    RefreshTokenRequestSchema   
+    RefreshTokenRequestSchema, ForgotPasswordRequestSchema, ResetPasswordRequestSchema   
 )
 from app.authentication.service.authentication_service import (
     auth_register_service, auth_login_service, auth_update_pwd_service, 
-    auth_me_service, auth_refresh_service, auth_logout_service
+    auth_me_service, auth_refresh_service, auth_logout_service, auth_forgot_password_service,
+    auth_reset_password_service
 )
 
 auth_router = APIRouter()
@@ -59,4 +60,17 @@ def auth_me(user=Depends(get_current_user)):
 def auth_logout(body:RefreshTokenRequestSchema,
                 user=Depends(get_current_user)):
     response = auth_logout_service(body,user)
+    return response
+
+
+@auth_router.post('/auth/forgot/password')
+async def auth_forgot_password(body:ForgotPasswordRequestSchema,
+                         db:Session=Depends(get_db)):
+    response = auth_forgot_password_service(body,db)
+    return await response
+
+@auth_router.post('/auth/reset/password')
+def auth_reset_password(token:str,body:ResetPasswordRequestSchema,
+                        db=Depends(get_db)):
+    response = auth_reset_password_service(token,body,db)
     return response
