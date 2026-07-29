@@ -1,10 +1,10 @@
-from datetime import datetime
 from app.database import Base
+from datetime import datetime, timezone
 from sqlalchemy import (
-    Column, String, Integer, ForeignKey, Boolean, Date, DateTime, UniqueConstraint,Enum
+    JSON, Column, String, Integer, ForeignKey, Boolean, Date, DateTime, UniqueConstraint,Enum
 )
 from sqlalchemy.orm import relationship
-from app.utility.enums import OrderStatusEnum 
+from app.utility.enums import OrderStatusEnum, PaymentStatusEnum, PaymentEventEnum
 
 class Role(Base):
     __tablename__ = 'roles'
@@ -105,7 +105,7 @@ class Order(Base):
 
     user = relationship("User", back_populates="orders")
     items = relationship("OrderItem", back_populates="order")
-    payment = relationship("Payment", back_populates="order", uselist=False)
+    payments = relationship("Payment", back_populates="order")
 
 class OrderItem(Base):
     __tablename__ = "order_items"
@@ -123,14 +123,52 @@ class Payment(Base):
     __tablename__ = 'payments'
     id = Column(Integer, primary_key=True)
     order_id = Column(Integer, ForeignKey("orders.id"))
-    amount = Column(Integer)
-    transaction_id = Column(String(100))
-    payment_method = Column(String(100))
-    status = Column(String(100))
+    gateway = Column(String(50))
+    gateway_order_id = Column(String(100), index=True)
+    gateway_payment_id = Column(String(100), index=True)
+    amount = Column(Integer, nullable=False)
+    currency = Column(String(10), default='INR')
+    payment_method = Column(String(50))
+    status = Column(Enum(PaymentStatusEnum, name="payment_status"),
+                    default=PaymentStatusEnum.PENDING,
+                    nullable=False
+                    )
+    failure_reason = Column(String(500))
+    paid_at = Column(DateTime)
+    created_at = Column(DateTime, default=lambda:datetime.now(timezone.utc))
+    updated_at = Column(DateTime, default=lambda:datetime.now(timezone.utc), 
+                        onupdate=lambda:datetime.now(timezone.utc))
 
-    order = relationship("Order", back_populates='payment')
+    order = relationship("Order", back_populates="payments")
+    events = relationship("PaymentEvent", back_populates="payment")
+    idempotency_keys = relationship("IdempotencyKey", back_populates="payment")
+    
+    
+class PaymentEvent(Base):
+    __tablename__ = 'payment_events'
+    id = Column(Integer, primary_key=True)
+    payment_id = Column(Integer, ForeignKey('payments.id'), nullable=False)
+    event_type = Column(Enum(PaymentEventEnum), nullable=False)
+    status = Column(Enum(PaymentStatusEnum, name="payment_event_status"))
+    request_payload = Column(JSON)
+    response_payload = Column(JSON)
+    created_at = Column(DateTime, default=lambda:datetime.now(timezone.utc))
+    
+    payment = relationship("Payment", back_populates="events")
 
 
+class IdempotencyKey(Base):
+    __tablename__ = 'idempotency_keys'
+    id = Column(Integer, primary_key=True)
+    key = Column(String(255), unique=True, nullable=False)
+    payment_id = Column(Integer, ForeignKey("payments.id"))
+    endpoint = Column(String(200))
+    created_at = Column(DateTime, default=lambda:datetime.now(timezone.utc))
+    expires_at = Column(DateTime)    
+    
+    payment = relationship("Payment", back_populates="idempotency_keys")
+    
+    
 class Notification(Base):
     __tablename__ = 'notifications'
     id = Column(Integer, primary_key=True)
