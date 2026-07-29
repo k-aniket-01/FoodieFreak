@@ -10,6 +10,7 @@ bcrypt==3.2.2
 blinker==1.9.0
 certifi==2026.6.17
 cffi==2.0.0
+charset-normalizer==3.4.9
 click==8.4.1
 comm==0.2.3
 cryptography==49.0.0
@@ -67,8 +68,10 @@ python-jose==3.5.0
 python-multipart==0.0.32
 PyYAML==6.0.3
 pyzmq==27.1.0
+razorpay==2.0.1
 redis==8.0.1
 regex==2026.7.19
+requests==2.34.2
 rich==15.0.0
 rich-toolkit==0.20.1
 rignore==0.7.6

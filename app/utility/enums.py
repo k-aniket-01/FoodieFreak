@@ -43,3 +43,6 @@ class PaymentEventEnum(str, Enum):
     WEBHOOK_RECEIVED = "WEBHOOK_RECEIVED"
     WEBHOOK_VERIFIED = "WEBHOOK_VERIFIED"
     REFUND_CREATED = "REFUND_CREATED"
+    
+class GatewayEnum(str, Enum):
+    RAZORPAY = "RAZORPAY"
