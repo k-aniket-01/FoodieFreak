@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FoodieFreak - Payment Test</title>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+</head>
+<body>
+
+    <h2>FoodieFreak Payment Test</h2>
+
+    <label for="orderId">Order ID:</label>
+    <input
+        type="number"
+        id="orderId"
+        placeholder="Enter Order ID"
+        min="1"
+        required
+    />
+
+    <br><br>
+
+    <button id="rzp-button">Pay Now</button>
+
+    <pre id="output"></pre>
+
+    <script>
+        const output = document.getElementById("output");
+        const payButton = document.getElementById("rzp-button");
+        const orderIdInput = document.getElementById("orderId");
+
+        async function fetchWithAuth(url, options = {}) {
+            const response = await fetch(url, options);
+
+            if (response.status === 401) {
+                alert("Session expired. Please login again.");
+                localStorage.removeItem("access_token");
+                window.location.href = "/temp/login";
+                throw new Error("Unauthorized");
+            }
+
+            return response;
+        }
+
+        payButton.onclick = async function () {
+
+            payButton.disabled = true;
+
+            try {
+
+                const token = localStorage.getItem("access_token");
+
+                if (!token) {
+                    window.location.href = "/temp/login";
+                    return;
+                }
+
+                const orderId = orderIdInput.value.trim();
+
+                if (!orderId) {
+                    alert("Please enter an Order ID.");
+                    payButton.disabled = false;
+                    return;
+                }
+
+                const response = await fetchWithAuth("/payment/create", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        order_id: Number(orderId)
+                    })
+                });
+
+                const order = await response.json();
+
+                console.log(order);
+
+                if (!response.ok) {
+                    output.textContent = JSON.stringify(order, null, 4);
+                    alert(order.detail || "Create Payment Failed");
+                    payButton.disabled = false;
+                    return;
+                }
+
+                const paymentId = order.payment_id;
+
+                const options = {
+                    key: "{{ key_id }}",
+                    amount: order.amount,
+                    currency: order.currency,
+                    name: "FoodieFreak",
+                    description: "Order Payment",
+                    order_id: order.gateway_order_id || order.id,
+
+                    handler: async function (response) {
+
+                        try {
+
+                            output.textContent =
+                                JSON.stringify(response, null, 4);
+
+                            const verifyResponse = await fetchWithAuth("/payment/verify", {
+                                method: "POST",
+                                headers: {
+                                    "Content-Type": "application/json",
+                                    "Authorization": `Bearer ${token}`
+                                },
+                                body: JSON.stringify({
+                                    payment_id: paymentId,
+                                    razorpay_order_id: response.razorpay_order_id,
+                                    razorpay_payment_id: response.razorpay_payment_id,
+                                    razorpay_signature: response.razorpay_signature
+                                })
+                            });
+
+                            const verifyData = await verifyResponse.json();
+
+                            output.textContent += "\n\nVERIFY RESPONSE\n\n";
+                            output.textContent += JSON.stringify(verifyData, null, 4);
+
+                            if (verifyResponse.ok && verifyData === true) {
+                                alert("Payment Verified Successfully");
+                            } else {
+                                alert("Payment Verification Failed");
+                            }
+
+                        } catch (err) {
+                            console.error(err);
+                            alert(err.message);
+                        } finally {
+                            payButton.disabled = false;
+                        }
+                    },
+
+                    modal: {
+                        ondismiss: function () {
+                            output.textContent += "\n\nPayment popup closed by user.";
+                            payButton.disabled = false;
+                        }
+                    },
+
+                    theme: {
+                        color: "#3399cc"
+                    }
+                };
+
+                const rzp = new Razorpay(options);
+
+                rzp.on("payment.failed", function (response) {
+
+                    output.textContent += "\n\nPAYMENT FAILED\n\n";
+                    output.textContent += JSON.stringify(response.error, null, 4);
+
+                    alert("Payment Failed");
+
+                    payButton.disabled = false;
+                });
+
+                rzp.open();
+
+            } catch (err) {
+
+                console.error(err);
+
+                alert(err.message);
+
+                payButton.disabled = false;
+            }
+        };
+    </script>
+
+</body>
+</html>
