@@ -148,8 +148,8 @@ class PaymentEvent(Base):
     __tablename__ = 'payment_events'
     id = Column(Integer, primary_key=True)
     payment_id = Column(Integer, ForeignKey('payments.id'), nullable=False)
-    event_type = Column(Enum(PaymentEventEnum), nullable=False)
-    status = Column(Enum(PaymentStatusEnum, name="payment_event_status"))
+    event_type = Column(String(50), nullable=False)
+    status = Column(String(50))
     request_payload = Column(JSON)
     response_payload = Column(JSON)
     created_at = Column(DateTime, default=lambda:datetime.now(timezone.utc))

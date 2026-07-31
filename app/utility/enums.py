@@ -46,3 +46,12 @@ class PaymentEventEnum(str, Enum):
     
 class GatewayEnum(str, Enum):
     RAZORPAY = "RAZORPAY"
+    
+class RazorpayWebhookEvent(str, Enum):
+    PAYMENT_AUTHORIZED = "payment.authorized"
+    PAYMENT_CAPTURED = "payment.captured"
+    PAYMENT_FAILED = "payment.failed"
+    ORDER_PAID = "order.paid"
+    REFUND_CREATED = "refund.created"
+    REFUND_PROCESSED = "refund.processed"
+    REFUND_FAILED = "refund.failed"

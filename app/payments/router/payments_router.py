@@ -1,10 +1,10 @@
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, Header, Request
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 from app.payments.schema.payments_schema import CreatePaymentRequestSchema, VerifyPaymentRequestSchema
 from app.utility.auth_utility import require_customer
 from app.database import get_db
-from app.payments.service.payments_service import create_payment_service, verify_payment_service
+from app.payments.service.payments_service import create_payment_service, payment_webhook_service, verify_payment_service
 import os 
 from dotenv import load_dotenv
 
@@ -29,8 +29,16 @@ def verify_payment(body:VerifyPaymentRequestSchema,
     response_data = verify_payment_service(body, db)
     return response_data
 
+@payment_router.post('/payment/webhook')
+async def payment_webhook(request:Request,
+                    x_razorpay_signature: str = Header(),
+                    x_razorpay_event_id : str = Header(),
+                    db:Session=Depends(get_db)
+                    ):
+    await payment_webhook_service(request, x_razorpay_signature, x_razorpay_event_id,db)
+    return {"success":True}
 
-#temp outers below don not commit/ or reomve after this module finsinshed
+#temp routers below don not commit/ifcommited for testing reomve after this module fininshed
 @payment_router.get('/temp/login')
 def temp_login(request:Request):
     return template.TemplateResponse(request=request,
