@@ -1,18 +1,24 @@
-from fastapi import APIRouter, Depends, Header, Request
-from fastapi.templating import Jinja2Templates
-from sqlalchemy.orm import Session
-from app.payments.schema.payments_schema import CreatePaymentRequestSchema, VerifyPaymentRequestSchema
-from app.utility.auth_utility import require_customer
-from app.database import get_db
-from app.payments.service.payments_service import create_payment_service, payment_webhook_service, verify_payment_service
 import os 
 from dotenv import load_dotenv
+from app.database import get_db
+from sqlalchemy.orm import Session
+from fastapi.templating import Jinja2Templates
+from app.utility.auth_utility import require_customer
+from fastapi import APIRouter, Depends, Header, Request
+from app.payments.schema.payments_schema import GetPaymentHistoryFiltersSchema
+from app.payments.schema.payments_schema import (
+    CreatePaymentRequestSchema, VerifyPaymentRequestSchema
+)
+from app.payments.service.payments_service import (
+    create_payment_service, get_payment_service, payment_webhook_service, verify_payment_service, 
+    get_payment_history_service
+)
+
 
 load_dotenv()
-
 payment_router = APIRouter()
-
 template = Jinja2Templates(directory="app/payments/templates")
+
 
 @payment_router.post('/payment/create')
 def create_payment(body:CreatePaymentRequestSchema,
@@ -38,14 +44,30 @@ async def payment_webhook(request:Request,
     await payment_webhook_service(request, x_razorpay_signature, x_razorpay_event_id,db)
     return {"success":True}
 
+@payment_router.get('/payment/history')
+def get_payment_history(db:Session=Depends(get_db),
+                        user=Depends(require_customer),
+                        params: GetPaymentHistoryFiltersSchema = Depends()
+                        ):
+    response_data = get_payment_history_service(db,user,params)
+    return response_data
+
+@payment_router.get('/payment/{id:int}')
+def get_payment(id:int,
+                db:Session=Depends(get_db),
+                user=Depends(require_customer)
+                ):
+    response_data = get_payment_service(id, db, user)
+    return response_data
+    
+    
 #temp routers below don not commit/ifcommited for testing reomve after this module fininshed
 @payment_router.get('/temp/login')
 def temp_login(request:Request):
     return template.TemplateResponse(request=request,
                                      name='login.html',
                                      )
-    
-    
+     
 @payment_router.get('/payment/checkout')
 def checkout_payment(reqeust:Request):
     return template.TemplateResponse(request=reqeust,

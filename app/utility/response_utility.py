@@ -1,5 +1,8 @@
 from typing import Optional
 from pydantic import BaseModel
+from fastapi import HTTPException, status
+from app.utility.enums import SortEnum
+from datetime import time
 from app.models.common_models import *
 
 
@@ -11,9 +14,8 @@ class PaginationResponseSchema(PaginationRequestSchema):
     total_records : Optional[int] = None
     total_pages : Optional[int] = None
     
-def apply_pagination(body:PaginationRequestSchema,
-                     query
-                     ):
+    
+def apply_pagination(body:PaginationRequestSchema, query):
     ost = (body.page - 1) * body.per_page 
     lmt = body.per_page
     total_records = query.count()
@@ -34,7 +36,24 @@ def apply_filters(body, model, query):
         if v is not None and hasattr(model, k):
             field = getattr(model, k)
             filters.append(field == v)
+            
+    if body.start_date:
+        filters.append(model.created_at >= datetime.combine(body.start_date, time.min))
+    if body.end_date:
+        filters.append(model.created_at <= datetime.combine(body.end_date, time.max))
     if filters:
         query = query.filter(*filters)
     return query
 
+
+def apply_sorting(body, model, query):
+    sort_column = getattr(model, body.sort_by, None)
+    if sort_column is None:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid sort_by")
+    
+    query = query.order_by(
+        sort_column.asc() 
+        if body.sort_order == SortEnum.ASC 
+        else sort_column.desc()
+        )
+    return query

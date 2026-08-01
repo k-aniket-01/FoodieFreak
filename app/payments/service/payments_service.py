@@ -5,9 +5,11 @@ import json
 import razorpay
 from dotenv import load_dotenv
 from fastapi import HTTPException, Request, status
+from app.payments.transformer.payments_transformer import get_payment_history_transformer, get_payment_transformer
 from app.utility.enums import OrderStatusEnum, PaymentStatusEnum, RazorpayWebhookEvent
-from app.models.common_models import Payment, PaymentEvent, IdempotencyKey
+from app.models.common_models import Payment, PaymentEvent, IdempotencyKey,Order, User
 from app.utility.payment_utility import razorpay_client
+from app.utility.response_utility import apply_filters, apply_pagination, apply_sorting
 from app.payments.schema.payments_schema import VerifyPaymentRequestSchema
 from app.utility.enums import PaymentEventEnum, GatewayEnum
 from fastapi.templating import Jinja2Templates
@@ -29,7 +31,7 @@ def create_payment_service(body, db, user):
     if order.total_amount <= 0:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
                             detail='ORDER AMOUNT SHOULD BE GREATER THAN ZERO')  
-    payments = (db.query(Payment)            # payment_method = 'ONLINE',
+    payments = (db.query(Payment)
                 .filter(Payment.order_id == order_id)
                 .with_for_update()
                 .first()
@@ -188,3 +190,56 @@ async def payment_webhook_service(request:Request, x_razorpay_signature, x_razor
         logger.exception(f"{e}")
         db.rollback()
         return {e}
+    
+
+def get_payment_history_service(db, user, params):
+    query = (db.query(Payment.id,
+                      Payment.order_id,
+                      Payment.gateway,
+                      Payment.gateway_order_id,
+                      Payment.gateway_payment_id,
+                      Payment.amount,
+                      Payment.currency,
+                      Payment.payment_method,
+                      Payment.status,
+                      Payment.failure_reason,
+                      Payment.paid_at,
+                      Payment.created_at,
+                      Payment.updated_at)
+             .join(Order, Payment.order_id == Order.id)
+             .join(User, Order.user_id == User.id)
+            ) #below used the function to reduce repetative logic to check query without this
+    query = query.filter(User.id == user.id) #check app/orders/service get_canteen_orders_service
+    query = apply_sorting(body=params, model=Payment, query=query)
+    query = apply_filters(body=params, model=Payment, query=query)
+    query, pagination = apply_pagination(body=params, query=query)
+    query = query.all()
+    response_data = get_payment_history_transformer(query, pagination)
+    return response_data
+
+
+def get_payment_service(id, db, user):
+    payment = ( db.query( Payment.id,
+                        Payment.order_id,
+                        Payment.gateway,
+                        Payment.gateway_order_id,
+                        Payment.gateway_payment_id,
+                        Payment.amount,
+                        Payment.currency,
+                        Payment.payment_method,
+                        Payment.status,
+                        Payment.failure_reason,
+                        Payment.paid_at,
+                        Payment.created_at,
+                        Payment.updated_at)
+                .join(Order, Payment.order_id == Order.id)
+                .join(User, Order.user_id == User.id)
+                .filter(User.id == user.id,
+                        Payment.id == id)
+                .first()
+                )
+    if not payment:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail='ORDER NOT FOUND')
+    response_data = get_payment_transformer(payment)
+    return response_data

@@ -27,6 +27,21 @@ class CanteenOrderSortByEnum(str, Enum):
     STATUS = "status"
     TOTAL_AMOUNT = "total_amount"
     
+class PaymentSortByEnum(str, Enum):
+    id = "id"
+    order_id = "order_id"
+    gateway = "gateway"
+    gateway_order_id = "gateway_order_id"
+    gateway_payment_id = "gateway_payment_id"
+    amount = "amount"
+    currency = "currency"
+    payment_method = "payment_method"
+    status = "status"
+    failure_reason = "failure_reason"
+    paid_at = "paid_at"
+    created_at = "created_at"
+    updated_at = "updated_at"
+    
 class PaymentStatusEnum(str, Enum):
     PENDING = "PENDING"
     PROCESSING = "PROCESSING"
