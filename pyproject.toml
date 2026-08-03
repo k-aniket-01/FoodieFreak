@@ -1,2 +1,15 @@
+[project]
+name = "foodiefreak"
+version = "1.0.0"
+description = "FoodieFreak Backend"
+requires-python = ">=3.10,<3.14"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
 [tool.fastapi]
 entrypoint = "app.main:app"
+
+[tool.setuptools.packages.find]
+include = ["app*"]
