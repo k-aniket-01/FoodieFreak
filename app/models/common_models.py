@@ -157,7 +157,7 @@ class PaymentEvent(Base):
     
     payment = relationship("Payment", back_populates="events")
 
-class Refud(Base):
+class Refund(Base):
     __tablename__ = 'refunds'
     id = Column(Integer, primary_key=True)
     payment_id = Column(Integer, ForeignKey("payments.id"))
