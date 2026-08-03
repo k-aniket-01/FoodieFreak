@@ -45,3 +45,8 @@ class GetPaymentHistoryFiltersSchema(BaseModel):
 class GetPaymentHistoryResponseSchema(BaseModel):
     data : list[PaymentBaseSchema] = None
     pagination : PaginationResponseSchema = None
+    
+class RefundRequestSchema(BaseModel):
+    payment_id : int
+    reason : Optional[str] = None
+    

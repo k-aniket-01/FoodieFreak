@@ -48,6 +48,8 @@ class PaymentStatusEnum(str, Enum):
     SUCCESS = "SUCCESS"
     FAILED = "FAILED"
     CANCELLED = "CANCELLED"
+    REFUND_CREATED = "REFUND_CREATED"
+    REFUND_PROCESSED = "REFUND_PROCESSED"
     REFUNDED = "REFUNDED"
     
 class PaymentEventEnum(str, Enum):

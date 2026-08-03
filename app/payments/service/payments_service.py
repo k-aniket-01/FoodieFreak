@@ -1,19 +1,19 @@
-from datetime import datetime
 import os 
-import time
 import json
+import time
 import razorpay
+from datetime import datetime
 from dotenv import load_dotenv
-from fastapi import HTTPException, Request, status
-from app.payments.transformer.payments_transformer import get_payment_history_transformer, get_payment_transformer
-from app.utility.enums import OrderStatusEnum, PaymentStatusEnum, RazorpayWebhookEvent
-from app.models.common_models import Payment, PaymentEvent, IdempotencyKey,Order, User
-from app.utility.payment_utility import razorpay_client
-from app.utility.response_utility import apply_filters, apply_pagination, apply_sorting
-from app.payments.schema.payments_schema import VerifyPaymentRequestSchema
-from app.utility.enums import PaymentEventEnum, GatewayEnum
-from fastapi.templating import Jinja2Templates
 from app.utility.logger_utility import logger
+from fastapi.templating import Jinja2Templates
+from fastapi import HTTPException, Request, status
+from app.utility.payment_utility import razorpay_client
+from app.utility.enums import PaymentEventEnum, GatewayEnum
+from app.utility.enums import OrderStatusEnum, PaymentStatusEnum, RazorpayWebhookEvent
+from app.utility.response_utility import apply_filters, apply_pagination, apply_sorting
+from app.models.common_models import Payment, PaymentEvent, IdempotencyKey,Order, User, Refund
+from app.payments.schema.payments_schema import VerifyPaymentRequestSchema, RefundRequestSchema
+from app.payments.transformer.payments_transformer import get_payment_history_transformer, get_payment_transformer
 
 load_dotenv()
 template = Jinja2Templates(directory="app/payments/templates")
@@ -66,7 +66,8 @@ def create_payment_service(body, db, user):
         db.add(payment)
         db.flush()
         
-        payment_event = PaymentEvent(payment_id = payment.id,
+        payment_event = PaymentEvent(
+            payment_id = payment.id,
             event_type = PaymentEventEnum.GATEWAY_ORDER_CREATED,
             status = PaymentStatusEnum.PENDING,
             request_payload= payment_details,
@@ -129,7 +130,7 @@ def verify_payment_service(body:VerifyPaymentRequestSchema, db):
                "message":f"{e}"}
         
 
-async def payment_webhook_service(request:Request, x_razorpay_signature, x_razorpay_event_id, db):
+async def payment_webhook_service(request: Request, x_razorpay_signature, x_razorpay_event_id, db):
     raw_body = await request.body()
     signature = x_razorpay_signature
     event_id = x_razorpay_event_id
@@ -141,17 +142,14 @@ async def payment_webhook_service(request:Request, x_razorpay_signature, x_razor
         razorpay_client.utility.verify_webhook_signature(body,signature,os.getenv('WEBHOOK_SECRET'))
         i_key = db.query(IdempotencyKey).filter(IdempotencyKey.key == event_id).first()
         if i_key:
-            logger.info("Duplicate webhook ignored")
+            logger.info("Duplicate webhook ignored %s", i_key)
             return 
         payment = (db.query(Payment)
                    .filter(Payment.gateway_order_id == data.get("order_id"))
                    .with_for_update()
                    .first())
         if not payment:
-            logger.error(
-                        "Webhook received for unknown gateway order %s",
-                        data.get("order_id"),
-                    )
+            logger.error("Webhook received for unknown gateway order %s", data.get("order_id"))
             return 
         pay_event = PaymentEvent(
             payment_id = payment.id,
@@ -219,7 +217,7 @@ def get_payment_history_service(db, user, params):
 
 
 def get_payment_service(id, db, user):
-    payment = ( db.query( Payment.id,
+    payment = (db.query(Payment.id,
                         Payment.order_id,
                         Payment.gateway,
                         Payment.gateway_order_id,
@@ -234,8 +232,7 @@ def get_payment_service(id, db, user):
                         Payment.updated_at)
                 .join(Order, Payment.order_id == Order.id)
                 .join(User, Order.user_id == User.id)
-                .filter(User.id == user.id,
-                        Payment.id == id)
+                .filter(User.id == user.id, Payment.id == id)
                 .first()
                 )
     if not payment:
@@ -243,3 +240,113 @@ def get_payment_service(id, db, user):
                             detail='ORDER NOT FOUND')
     response_data = get_payment_transformer(payment)
     return response_data
+
+
+def create_refund_service(body:RefundRequestSchema, db, user):
+    payment = (
+        db.query(Payment)
+        .join(Order, Payment.order_id == Order.id)
+        .join(User, Order.user_id == User.id)
+        .filter(User.id == user.id, Payment.id == body.payment_id)
+        .first()
+        )
+    print(payment)
+    if not payment:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail='PAYMENT DETAILS NOT FOUND')
+    if payment.status != PaymentStatusEnum.SUCCESS:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail='PAYMENT CANNOT BE REFUNDED')
+    if payment.order.status not in (OrderStatusEnum.PENDING, OrderStatusEnum.PREPARING):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail='PAYMENT CANNNOT BE REUNDED')
+    refunds = db.query(Refund).filter(Refund.payment_id == body.payment_id).first()
+    if refunds:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail='AN REFUND ALREADY PROCESSED')
+    try:
+        refund_amount = int(payment.amount * 100)
+        print(payment.gateway_payment_id)
+        print(refund_amount)
+        data = razorpay_client.payment.refund(
+            payment.gateway_payment_id,
+            {"amount":refund_amount, "speed":"normal"}
+            )
+        rec_refund = Refund(
+            payment_id = payment.id,
+            gateway_refund_id = data.get("id"),
+            amount = data.get("amount") // 100,
+            status = data.get("status"),
+            speed_requested = data.get("speed_requested"),
+            speed_processed = data.get("speed_processed")
+            )
+        pay_event = PaymentEvent(
+            payment_id = payment.id,
+            event_type = data.get("entity"),
+            status = data.get("status"),
+            request_payload = body.model_dump(),
+            response_payload = json.dumps(data)
+            )
+        payment.status = PaymentStatusEnum.REFUND_CREATED
+        payment.order.status = OrderStatusEnum.CANCELLED
+        
+        db.add_all([rec_refund, pay_event])
+        db.commit()
+        return True
+    except razorpay.errors.BadRequestError  as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail=f'{e}')
+    except Exception as e:
+        db.rollback()
+        logger.error(f"{e}")
+        raise e
+    
+    
+async def refund_webhook_service(request:Request, x_razorpay_signature, x_razorpay_event_id, db):
+        raw_body = await request.body()
+        signature = x_razorpay_signature
+        event_id = x_razorpay_event_id
+        body = raw_body.decode("utf-8")
+        payload =  json.loads(body)
+        data = payload["payload"]["refund"]["entity"]
+        logger.info('refund webhook received')
+        
+        try:
+            razorpay_client.utility.verify_webhook_signature(body, signature, os.getenv('WEBHOOK_SECRET'))
+            i_key = db.query(IdempotencyKey).filter(IdempotencyKey.key == event_id).first()
+            if i_key:
+                logger.info("Duplicate webhook ignored %s", i_key)
+                return False
+            refund = (db.query(Refund)
+                      .filter(Refund.gateway_refund_id == data.get("id"))
+                      .with_for_update()
+                      .first()
+                      )
+            if not refund:
+                logger.error("Webhook received for unknown gateway refund %s", data.get("id"))
+                return False
+            
+            refund.status = data.get("status")
+            refund.speed_requested = data.get("speed_requested")
+            refund.speed_processed = data.get("speed_processed")
+            
+            pay_event = PaymentEvent(
+                payment_id = refund.payment_id,
+                event_type = payload.get("event"),
+                status = data.get("status"),
+                request_payload = payload
+            )
+            idem_key = IdempotencyKey(
+                key = event_id,
+                payment_id = refund.payment_id,
+                endpoint = payload.get('event')
+            )
+            db.add_all([pay_event, idem_key])
+            db.commit()
+            return True
+            
+        except Exception as e:
+            db.rollback()
+            logger.error(e)
+            raise e
+        

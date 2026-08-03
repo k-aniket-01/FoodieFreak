@@ -7,11 +7,11 @@ from app.utility.auth_utility import require_customer
 from fastapi import APIRouter, Depends, Header, Request
 from app.payments.schema.payments_schema import GetPaymentHistoryFiltersSchema
 from app.payments.schema.payments_schema import (
-    CreatePaymentRequestSchema, VerifyPaymentRequestSchema
+    CreatePaymentRequestSchema, VerifyPaymentRequestSchema, RefundRequestSchema
 )
 from app.payments.service.payments_service import (
     create_payment_service, get_payment_service, payment_webhook_service, verify_payment_service, 
-    get_payment_history_service
+    get_payment_history_service, create_refund_service, refund_webhook_service
 )
 
 
@@ -35,13 +35,13 @@ def verify_payment(body:VerifyPaymentRequestSchema,
     response_data = verify_payment_service(body, db)
     return response_data
 
-@payment_router.post('/payment/webhook')
+@payment_router.post('/webhook/payment')
 async def payment_webhook(request:Request,
                     x_razorpay_signature: str = Header(),
                     x_razorpay_event_id : str = Header(),
                     db:Session=Depends(get_db)
                     ):
-    await payment_webhook_service(request, x_razorpay_signature, x_razorpay_event_id,db)
+    await payment_webhook_service(request, x_razorpay_signature, x_razorpay_event_id, db)
     return {"success":True}
 
 @payment_router.get('/payment/history')
@@ -59,8 +59,28 @@ def get_payment(id:int,
                 ):
     response_data = get_payment_service(id, db, user)
     return response_data
+
+@payment_router.post('/refund/create')
+def create_refund(
+        body : RefundRequestSchema,
+        db: Session=Depends(get_db),
+        user = Depends(require_customer)
+        ):
+    response_data = create_refund_service(body, db, user)
+    return response_data
     
-    
+@payment_router.post('/webhook/refund')
+async def refund_webhook(
+        request: Request,
+        x_razorpay_signature: str = Header(),
+        x_razorpay_event_id : str = Header(),
+        db:Session=Depends(get_db)
+        ):
+    response_data = await refund_webhook_service(request, x_razorpay_signature, x_razorpay_event_id, db)
+    return response_data
+
+
+
 #temp routers below don not commit/ifcommited for testing reomve after this module fininshed
 @payment_router.get('/temp/login')
 def temp_login(request:Request):

@@ -1,10 +1,11 @@
 from app.database import Base
 from datetime import datetime, timezone
 from sqlalchemy import (
-    JSON, Column, String, Integer, ForeignKey, Boolean, Date, DateTime, UniqueConstraint,Enum
+    JSON, Column, String, Integer, ForeignKey, Boolean, Date, DateTime, 
+    UniqueConstraint, Enum
 )
 from sqlalchemy.orm import relationship
-from app.utility.enums import OrderStatusEnum, PaymentStatusEnum, PaymentEventEnum
+from app.utility.enums import OrderStatusEnum, PaymentStatusEnum
 
 class Role(Base):
     __tablename__ = 'roles'
