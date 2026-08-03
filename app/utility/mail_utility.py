@@ -11,10 +11,10 @@ conf = ConnectionConfig(
     MAIL_PORT= os.getenv("MAIL_PORT"),
     MAIL_SERVER= os.getenv("MAIL_SERVER"),
     MAIL_FROM_NAME= os.getenv("MAIL_FROM_NAME"),
-    USE_CREDENTIALS= os.getenv("USE_CREDENTIALS"),
-    VALIDATE_CERTS= os.getenv("VALIDATE_CERTS"),
-    MAIL_STARTTLS= os.getenv("MAIL_STARTTLS"),
-    MAIL_SSL_TLS= os.getenv("MAIL_SSL_TLS")
+    USE_CREDENTIALS= os.getenv("USE_CREDENTIALS") == "True",
+    VALIDATE_CERTS= os.getenv("VALIDATE_CERTS") == "True",
+    MAIL_STARTTLS= os.getenv("MAIL_STARTTLS") == "True",
+    MAIL_SSL_TLS= os.getenv("MAIL_SSL_TLS") == "True"
 )
 
 fast_mail = FastMail(conf)

@@ -266,8 +266,6 @@ def create_refund_service(body:RefundRequestSchema, db, user):
                             detail='AN REFUND ALREADY PROCESSED')
     try:
         refund_amount = int(payment.amount * 100)
-        print(payment.gateway_payment_id)
-        print(refund_amount)
         data = razorpay_client.payment.refund(
             payment.gateway_payment_id,
             {"amount":refund_amount, "speed":"normal"}
