@@ -141,6 +141,7 @@ class Payment(Base):
 
     order = relationship("Order", back_populates="payments")
     events = relationship("PaymentEvent", back_populates="payment")
+    refunds = relationship("Refund", back_populates="payment")
     idempotency_keys = relationship("IdempotencyKey", back_populates="payment")
     
     
@@ -156,15 +157,27 @@ class PaymentEvent(Base):
     
     payment = relationship("Payment", back_populates="events")
 
-
+class Refud(Base):
+    __tablename__ = 'refunds'
+    id = Column(Integer, primary_key=True)
+    payment_id = Column(Integer, ForeignKey("payments.id"))
+    gateway_refund_id = Column(String(100))
+    amount = Column(Integer)
+    status = Column(String(100))
+    speed_requested = Column(String(100))
+    speed_processed = Column(String(100))
+    created_at = Column(DateTime, default=lambda:datetime.now(timezone.utc))
+    updated_at = Column(DateTime, onupdate=lambda:datetime.now(timezone.utc))
+    
+    payment = relationship("Payment", back_populates="refunds")
+    
 class IdempotencyKey(Base):
     __tablename__ = 'idempotency_keys'
     id = Column(Integer, primary_key=True)
     key = Column(String(255), unique=True, nullable=False)
     payment_id = Column(Integer, ForeignKey("payments.id"))
     endpoint = Column(String(200))
-    created_at = Column(DateTime, default=lambda:datetime.now(timezone.utc))
-    expires_at = Column(DateTime)    
+    created_at = Column(DateTime, default=lambda:datetime.now(timezone.utc)) 
     
     payment = relationship("Payment", back_populates="idempotency_keys")
     
