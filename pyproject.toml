@@ -2,7 +2,25 @@
 name = "foodiefreak"
 version = "1.0.0"
 description = "FoodieFreak Backend"
-requires-python = ">=3.10,<3.14"
+requires-python = ">=3.10,<3.11"
+
+dependencies = [
+    "fastapi[standard]==0.138.0",
+    "SQLAlchemy==2.0.51",
+    "alembic==1.18.4",
+    "psycopg2-binary==2.9.12",
+    "asyncpg==0.31.0",
+    "pydantic==2.13.4",
+    "pydantic-settings==2.14.2",
+    "python-dotenv==1.2.2",
+    "python-jose==3.5.0",
+    "passlib==1.7.4",
+    "bcrypt==3.2.2",
+    "fastapi-mail==1.6.5",
+    "razorpay==2.0.1",
+    "redis==8.0.1",
+    "requests==2.34.2",
+]
 
 [build-system]
 requires = ["setuptools>=68"]
