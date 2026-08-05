@@ -37,9 +37,9 @@ def apply_filters(body, model, query):
             field = getattr(model, k)
             filters.append(field == v)
             
-    if body.start_date:
+    if getattr(body, "start_date", None):
         filters.append(model.created_at >= datetime.combine(body.start_date, time.min))
-    if body.end_date:
+    if getattr(body, "end_date", None):
         filters.append(model.created_at <= datetime.combine(body.end_date, time.max))
     if filters:
         query = query.filter(*filters)

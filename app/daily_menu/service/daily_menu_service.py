@@ -90,7 +90,7 @@ def get_daily_menu_history_service(body, db):
     query = db.query(DailyMenu)
     query = apply_filters(body=body, model=DailyMenu, query=query)
     if body.pagination:
-        query = apply_pagination(body=body.pagination, query=query)
+        query, _ = apply_pagination(body=body.pagination, query=query)
     query = query.all()
     response_data = get_daily_menu_history_transformer(query)
     return response_data

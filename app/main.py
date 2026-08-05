@@ -15,8 +15,11 @@ app = FastAPI(
     title="FoodieFreak",
     version="1.0.0",
     description="""
-                    Live : https://foodiefreak.onrender.com/docs
-                    Docs : https://docs.google.com/document/d/1I_EDXjYwqHvv7pQIcKD75utlpNwWkro4G7vsFGFwGiM/edit?usp=sharing
+                Live :
+                        Render          :-   https://foodiefreak.onrender.com
+                        FastAPI Cloud   :-   https://foodiefreak-d525b704.fastapicloud.dev
+                     
+                Docs : https://docs.google.com/document/d/1I_EDXjYwqHvv7pQIcKD75utlpNwWkro4G7vsFGFwGiM
                 """,
     contact={
         "name": "Aniket Khomane",
