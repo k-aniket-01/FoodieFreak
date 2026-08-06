@@ -4,6 +4,12 @@ from fastapi import HTTPException, status
 from app.utility.enums import SortEnum
 from datetime import time
 from app.models.common_models import *
+import logging
+from rich.logging import RichHandler
+
+
+logging.basicConfig(level="INFO", format="%(message)s", handlers=[RichHandler()])
+logger = logging.getLogger(__name__)
 
 
 class PaginationRequestSchema(BaseModel):

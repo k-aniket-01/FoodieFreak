@@ -190,6 +190,8 @@ class Notification(Base):
     title = Column(String(255))
     message = Column(String(1000))
     is_read = Column(Boolean, default=False)
+    created_at = Column(DateTime, default=lambda:datetime.now(timezone.utc))
+    updated_at = Column(DateTime, onupdate=lambda:datetime.now(timezone.utc))
 
     user = relationship("User")
 

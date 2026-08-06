@@ -4,8 +4,8 @@ import time
 import razorpay
 from datetime import datetime
 from dotenv import load_dotenv
-from app.utility.logger_utility import logger
 from fastapi.templating import Jinja2Templates
+from app.utility.response_utility import logger
 from fastapi import HTTPException, Request, status
 from app.utility.payment_utility import razorpay_client
 from app.utility.enums import PaymentEventEnum, GatewayEnum
@@ -191,23 +191,26 @@ async def payment_webhook_service(request: Request, x_razorpay_signature, x_razo
     
 
 def get_payment_history_service(db, user, params):
-    query = (db.query(Payment.id,
-                      Payment.order_id,
-                      Payment.gateway,
-                      Payment.gateway_order_id,
-                      Payment.gateway_payment_id,
-                      Payment.amount,
-                      Payment.currency,
-                      Payment.payment_method,
-                      Payment.status,
-                      Payment.failure_reason,
-                      Payment.paid_at,
-                      Payment.created_at,
-                      Payment.updated_at)
-             .join(Order, Payment.order_id == Order.id)
-             .join(User, Order.user_id == User.id)
-            ) #below used the function to reduce repetative logic to check query without this
-    query = query.filter(User.id == user.id) #check app/orders/service get_canteen_orders_service
+    query = (
+        db.query(
+            Payment.id,
+            Payment.order_id,
+            Payment.gateway,
+            Payment.gateway_order_id,
+            Payment.gateway_payment_id,
+            Payment.amount,
+            Payment.currency,
+            Payment.payment_method,
+            Payment.status,
+            Payment.failure_reason,
+            Payment.paid_at,
+            Payment.created_at,
+            Payment.updated_at,
+        )
+        .join(Order, Payment.order_id == Order.id)
+        .join(User, Order.user_id == User.id)
+    )  # below used the functions to reduce repetative filter logic 
+    query = query.filter(User.id == user.id)
     query = apply_sorting(body=params, model=Payment, query=query)
     query = apply_filters(body=params, model=Payment, query=query)
     query, pagination = apply_pagination(body=params, query=query)
@@ -217,27 +220,31 @@ def get_payment_history_service(db, user, params):
 
 
 def get_payment_service(id, db, user):
-    payment = (db.query(Payment.id,
-                        Payment.order_id,
-                        Payment.gateway,
-                        Payment.gateway_order_id,
-                        Payment.gateway_payment_id,
-                        Payment.amount,
-                        Payment.currency,
-                        Payment.payment_method,
-                        Payment.status,
-                        Payment.failure_reason,
-                        Payment.paid_at,
-                        Payment.created_at,
-                        Payment.updated_at)
-                .join(Order, Payment.order_id == Order.id)
-                .join(User, Order.user_id == User.id)
-                .filter(User.id == user.id, Payment.id == id)
-                .first()
-                )
+    payment = (
+        db.query(
+            Payment.id,
+            Payment.order_id,
+            Payment.gateway,
+            Payment.gateway_order_id,
+            Payment.gateway_payment_id,
+            Payment.amount,
+            Payment.currency,
+            Payment.payment_method,
+            Payment.status,
+            Payment.failure_reason,
+            Payment.paid_at,
+            Payment.created_at,
+            Payment.updated_at,
+        )
+        .join(Order, Payment.order_id == Order.id)
+        .join(User, Order.user_id == User.id)
+        .filter(User.id == user.id, Payment.id == id)
+        .first()
+    )
     if not payment:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                            detail='ORDER NOT FOUND')
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="ORDER NOT FOUND"
+        )
     response_data = get_payment_transformer(payment)
     return response_data
 
