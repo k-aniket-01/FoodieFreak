@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>FoodieFreak - Revenue Report</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Arial", "Helvetica", sans-serif;
+            background: #f5f7fa;
+            color: #1f2937;
+            line-height: 1.5;
+        }
+
+        .report {
+            width: 100%;
+            max-width: 1100px;
+            margin: 30px auto;
+            background: #ffffff;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+        }
+
+        /* =========================
+           HEADER
+        ========================== */
+
+        .header {
+            background: linear-gradient(135deg, #ff6b35, #f43f5e);
+            color: white;
+            padding: 36px 45px;
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .brand-icon {
+            width: 54px;
+            height: 54px;
+            border-radius: 14px;
+            background: rgba(255,255,255,0.20);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 28px;
+        }
+
+        .brand-name {
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .brand-tagline {
+            font-size: 12px;
+            opacity: 0.85;
+        }
+
+        .report-type {
+            text-align: right;
+        }
+
+        .report-type h2 {
+            font-size: 19px;
+        }
+
+        .report-type p {
+            font-size: 12px;
+            opacity: 0.85;
+            margin-top: 4px;
+        }
+
+        /* =========================
+           CONTENT
+        ========================== */
+
+        .content {
+            padding: 38px 45px;
+        }
+
+        .report-title {
+            margin-bottom: 28px;
+        }
+
+        .report-title h1 {
+            font-size: 25px;
+            color: #111827;
+            margin-bottom: 5px;
+        }
+
+        .report-title p {
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        /* =========================
+           REPORT PERIOD
+        ========================== */
+
+        .period-box {
+            background: #fff7ed;
+            border-left: 5px solid #ff6b35;
+            padding: 15px 20px;
+            margin-bottom: 28px;
+            border-radius: 6px;
+        }
+
+        .period-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #9a3412;
+            font-weight: bold;
+        }
+
+        .period-value {
+            margin-top: 4px;
+            font-size: 14px;
+            color: #431407;
+            font-weight: 600;
+        }
+
+        /* =========================
+           KPI CARDS
+        ========================== */
+
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 18px;
+            margin-bottom: 35px;
+        }
+
+        .kpi-card {
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 21px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .kpi-card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 5px;
+            height: 100%;
+            background: #ff6b35;
+        }
+
+        .kpi-label {
+            font-size: 11px;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.7px;
+            font-weight: 600;
+        }
+
+        .kpi-value {
+            margin-top: 7px;
+            font-size: 25px;
+            font-weight: 700;
+            color: #111827;
+        }
+
+        .kpi-description {
+            font-size: 11px;
+            color: #9ca3af;
+            margin-top: 5px;
+        }
+
+        /* =========================
+           SECTIONS
+        ========================== */
+
+        .section {
+            margin-top: 32px;
+        }
+
+        .section-header {
+            margin-bottom: 16px;
+            padding-bottom: 9px;
+            border-bottom: 2px solid #f3f4f6;
+        }
+
+        .section-title {
+            font-size: 17px;
+            font-weight: 700;
+            color: #111827;
+        }
+
+        .section-subtitle {
+            font-size: 12px;
+            color: #9ca3af;
+            margin-top: 3px;
+        }
+
+        /* =========================
+           REVENUE VISUALIZATION
+        ========================== */
+
+        .revenue-chart {
+            padding: 20px;
+            background: #fafafa;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+        }
+
+        .chart-row {
+            margin-bottom: 15px;
+        }
+
+        .chart-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            margin-bottom: 5px;
+        }
+
+        .chart-date {
+            font-weight: 600;
+        }
+
+        .chart-value {
+            font-weight: 700;
+            color: #ea580c;
+        }
+
+        .bar-background {
+            height: 10px;
+            background: #e5e7eb;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .bar {
+            height: 100%;
+            background: linear-gradient(90deg, #ff6b35, #f43f5e);
+            border-radius: 10px;
+        }
+
+        /* =========================
+           TABLE
+        ========================== */
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 5px;
+        }
+
+        thead {
+            background: #111827;
+            color: white;
+        }
+
+        th {
+            padding: 12px 14px;
+            font-size: 11px;
+            text-align: left;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        td {
+            padding: 13px 14px;
+            font-size: 13px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        tbody tr:nth-child(even) {
+            background: #f9fafb;
+        }
+
+        .amount {
+            font-weight: 700;
+            color: #15803d;
+        }
+
+        /* =========================
+           SUMMARY
+        ========================== */
+
+        .summary-box {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 22px;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .summary-item {
+            font-size: 13px;
+        }
+
+        .summary-item span {
+            color: #6b7280;
+        }
+
+        .summary-item strong {
+            display: block;
+            margin-top: 3px;
+            color: #111827;
+        }
+
+        /* =========================
+           FOOTER
+        ========================== */
+
+        .footer {
+            background: #111827;
+            color: #d1d5db;
+            padding: 22px 45px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 10px;
+        }
+
+        .footer-brand {
+            color: #fb923c;
+            font-weight: bold;
+        }
+
+        /* =========================
+           PRINT / PDF
+        ========================== */
+
+        @media print {
+
+            body {
+                background: white;
+            }
+
+            .report {
+                margin: 0;
+                box-shadow: none;
+                max-width: 100%;
+            }
+
+            .section,
+            .kpi-card,
+            table {
+                page-break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="report">
+
+    <!-- HEADER -->
+
+    <header class="header">
+
+        <div class="header-top">
+
+            <div class="brand">
+
+                <div class="brand-icon">
+                    🍴
+                </div>
+
+                <div>
+                    <div class="brand-name">FoodieFreak</div>
+                    <div class="brand-tagline">
+                        Order Management & Analytics
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="report-type">
+                <h2>Revenue Analytics</h2>
+                <p>Financial Performance Report</p>
+            </div>
+
+        </div>
+
+    </header>
+
+
+    <main class="content">
+
+        <!-- TITLE -->
+
+        <div class="report-title">
+            <h1>Revenue Performance Report</h1>
+            <p>
+                Detailed overview of successful payment transactions
+                and revenue performance.
+            </p>
+        </div>
+
+
+        <!-- REPORT PERIOD -->
+
+        <div class="period-box">
+
+            <div class="period-label">
+                Reporting Period
+            </div>
+
+            <div class="period-value">
+
+                {% if start_date and end_date %}
+
+                    {{ start_date }} — {{ end_date }}
+
+                {% elif start_date %}
+
+                    From {{ start_date }}
+
+                {% elif end_date %}
+
+                    Up to {{ end_date }}
+
+                {% else %}
+
+                    All Available Records
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+
+        <!-- KPI CARDS -->
+
+        <div class="kpi-grid">
+
+            <div class="kpi-card">
+
+                <div class="kpi-label">
+                    Total Revenue
+                </div>
+
+                <div class="kpi-value">
+                    ₹{{ "{:,.2f}".format(total_revenue or 0) }}
+                </div>
+
+                <div class="kpi-description">
+                    Revenue from successful transactions
+                </div>
+
+            </div>
+
+
+            <div class="kpi-card">
+
+                <div class="kpi-label">
+                    Total Transactions
+                </div>
+
+                <div class="kpi-value">
+                    {{ total_transactions or 0 }}
+                </div>
+
+                <div class="kpi-description">
+                    Successful payment transactions
+                </div>
+
+            </div>
+
+
+            <div class="kpi-card">
+
+                <div class="kpi-label">
+                    Average Order Value
+                </div>
+
+                <div class="kpi-value">
+                    ₹{{ "{:,.2f}".format(average_order_value or 0) }}
+                </div>
+
+                <div class="kpi-description">
+                    Average revenue generated per order
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- REVENUE VISUAL -->
+
+        <section class="section">
+
+            <div class="section-header">
+
+                <div class="section-title">
+                    Revenue Distribution
+                </div>
+
+                <div class="section-subtitle">
+                    Daily contribution to total revenue
+                </div>
+
+            </div>
+
+
+            <div class="revenue-chart">
+
+                {% for item in revenue_by_date %}
+
+                    <div class="chart-row">
+
+                        <div class="chart-info">
+
+                            <span class="chart-date">
+                                {{ item.r_date }}
+                            </span>
+
+                            <span class="chart-value">
+                                ₹{{ "{:,.2f}".format(item.revenue or 0) }}
+                            </span>
+
+                        </div>
+
+                        <div class="bar-background">
+
+                            <div
+                                class="bar"
+                                style="
+                                    width:
+                                    {% if total_revenue %}
+                                        {{ (item.revenue / total_revenue * 100) }}%
+                                    {% else %}
+                                        0%
+                                    {% endif %}
+                                ">
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+        </section>
+
+
+        <!-- DETAILED TABLE -->
+
+        <section class="section">
+
+            <div class="section-header">
+
+                <div class="section-title">
+                    Daily Revenue Breakdown
+                </div>
+
+                <div class="section-subtitle">
+                    Transaction and revenue statistics by date
+                </div>
+
+            </div>
+
+
+            <table>
+
+                <thead>
+
+                    <tr>
+                        <th>Date</th>
+                        <th>Transactions</th>
+                        <th>Revenue</th>
+                        <th>Avg. Transaction</th>
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                {% for item in revenue_by_date %}
+
+                    <tr>
+
+                        <td>
+                            {{ item.r_date }}
+                        </td>
+
+                        <td>
+                            {{ item.transactions }}
+                        </td>
+
+                        <td class="amount">
+                            ₹{{ "{:,.2f}".format(item.revenue or 0) }}
+                        </td>
+
+                        <td>
+
+                            {% if item.transactions %}
+
+                                ₹{{ "{:,.2f}".format(
+                                    item.revenue / item.transactions
+                                ) }}
+
+                            {% else %}
+
+                                ₹0.00
+
+                            {% endif %}
+
+                        </td>
+
+                    </tr>
+
+                {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </section>
+
+
+        <!-- REPORT SUMMARY -->
+
+        <section class="section">
+
+            <div class="section-header">
+
+                <div class="section-title">
+                    Report Summary
+                </div>
+
+                <div class="section-subtitle">
+                    Consolidated financial statistics
+                </div>
+
+            </div>
+
+
+            <div class="summary-box">
+
+                <div class="summary-grid">
+
+                    <div class="summary-item">
+
+                        <span>Total Revenue Generated</span>
+
+                        <strong>
+                            ₹{{ "{:,.2f}".format(total_revenue or 0) }}
+                        </strong>
+
+                    </div>
+
+
+                    <div class="summary-item">
+
+                        <span>Successful Transactions</span>
+
+                        <strong>
+                            {{ total_transactions or 0 }}
+                        </strong>
+
+                    </div>
+
+
+                    <div class="summary-item">
+
+                        <span>Average Order Value</span>
+
+                        <strong>
+                            ₹{{ "{:,.2f}".format(average_order_value or 0) }}
+                        </strong>
+
+                    </div>
+
+
+                    <div class="summary-item">
+
+                        <span>Revenue Reporting Days</span>
+
+                        <strong>
+                            {{ revenue_by_date | length }}
+                        </strong>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <!-- FOOTER -->
+
+    <footer class="footer">
+
+        <div>
+            <span class="footer-brand">FoodieFreak</span>
+            &nbsp;|&nbsp;
+            Revenue Analytics Report
+        </div>
+
+        <div>
+            Confidential • System Generated Report
+        </div>
+
+    </footer>
+
+</div>
+
+</body>
+</html>

@@ -16,6 +16,7 @@ class DashboardStatsResponseSchema(BaseModel):
 class DashboardRevenueParamSchema(BaseModel):
     start_date : Optional[date | None] = None
     end_date : Optional[date | None] = None  
+    pdf: Optional[bool] = False
     
 class RevenueByDateSchema(BaseModel):
     r_date : Optional[date | None] = None 

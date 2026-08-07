@@ -9,6 +9,9 @@ from rich.logging import RichHandler
 
 
 logging.basicConfig(level="INFO", format="%(message)s", handlers=[RichHandler()])
+# Silence verbose PDF generation logs
+logging.getLogger("weasyprint").setLevel(logging.WARNING)
+logging.getLogger("fontTools").setLevel(logging.WARNING)
 logger = logging.getLogger(__name__)
 
 
