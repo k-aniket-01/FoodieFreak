@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 from typing import Optional
+from datetime import date
 
 class DashboardStatsResponseSchema(BaseModel):
     total_orders : Optional[int] = None
@@ -12,3 +13,17 @@ class DashboardStatsResponseSchema(BaseModel):
     total_customers : Optional[int] = None
     todays_menu_items : Optional[int] = None
     
+class DashboardRevenueParamSchema(BaseModel):
+    start_date : Optional[date | None] = None
+    end_date : Optional[date | None] = None  
+    
+class RevenueByDateSchema(BaseModel):
+    r_date : Optional[date | None] = None 
+    revenue : Optional[int | None] = 0
+    transactions : Optional[int | None] = 0
+    
+class DashbardRevenueResponseSchema(DashboardRevenueParamSchema):
+    total_revenue : Optional[int | None] = 0
+    total_transactions : Optional[int | None] = 0
+    average_order_value : Optional[int | None] = 0
+    revenue_by_date : list[RevenueByDateSchema] | None = []

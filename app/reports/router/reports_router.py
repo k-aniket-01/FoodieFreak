@@ -2,14 +2,19 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.utility.auth_utility import require_owner 
-from app.reports.service.reports_service import get_dashboard_stats_service
+from app.reports.schema.reports_schema import DashboardRevenueParamSchema
+from app.reports.service.reports_service import get_dashboard_stats_service, dashboard_revenue_service
 
 
 reports_router = APIRouter()
 
 
-@reports_router.get('/dashboard/stats')
-def get_dashboard_stats(db:Session=Depends(get_db), user=Depends(require_owner)):
-    response_data = get_dashboard_stats_service(db, user)
+@reports_router.get('/dashboard/stats', dependencies=[Depends(require_owner)])
+def get_dashboard_stats(db:Session=Depends(get_db)):
+    response_data = get_dashboard_stats_service(db)
     return response_data
 
+@reports_router.get('/dashboard/revenue', dependencies=[Depends(require_owner)])
+def get_dashboard_revenue(db:Session=Depends(get_db), params: DashboardRevenueParamSchema = Depends()):
+    resposne_data = dashboard_revenue_service(db, params)
+    return resposne_data 

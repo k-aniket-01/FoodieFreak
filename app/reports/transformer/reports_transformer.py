@@ -1,4 +1,7 @@
-from app.reports.schema.reports_schema import DashboardStatsResponseSchema
+from app.reports.schema.reports_schema import (
+    DashboardStatsResponseSchema, DashbardRevenueResponseSchema, RevenueByDateSchema, 
+    DashboardRevenueParamSchema
+)
 
 def get_dashboard_stats_transformer(
     orders, revenue, total_customers, todays_menu_items
@@ -21,3 +24,21 @@ def get_dashboard_stats_transformer(
         .model_dump()
     )
     return response_data
+
+
+def dashboard_revenue_transformer(params:DashboardRevenueParamSchema, revenue, revenue_by_date):
+    params = params.model_dump()
+    revenue = dict(revenue._mapping)
+    revenue_by_date = [
+        RevenueByDateSchema
+        .model_validate(item, from_attributes=True)
+        .model_dump()
+        for item in revenue_by_date
+    ]
+    data = {**params, **revenue, "revenue_by_date":revenue_by_date}
+    response_date = (
+        DashbardRevenueResponseSchema
+        .model_validate(data)
+        .model_dump()
+    )
+    return response_date
