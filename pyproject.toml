@@ -2,7 +2,7 @@
 name = "foodiefreak"
 version = "1.0.0"
 description = "FoodieFreak Backend"
-requires-python = ">=3.10,<3.11"
+
 
 dependencies = [
     "fastapi[standard]==0.138.0",
