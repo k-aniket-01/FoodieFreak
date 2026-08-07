@@ -1,12 +1,11 @@
 from app.reports.schema.reports_schema import (
-    DashboardStatsResponseSchema, DashbardRevenueResponseSchema, RevenueByDateSchema, 
-    DashboardRevenueParamSchema
+    DashboardStatsResponseSchema, DashboardRevenueResponseSchema, RevenueByDateSchema, 
+    ReportParamSchema, OrderTrend, DashBoardOrdersResponseSchema, StatusSummary
 )
 
 def get_dashboard_stats_transformer(
     orders, revenue, total_customers, todays_menu_items
 ):
-    
     data_dict = {
         "total_orders" : orders[0],
         "todays_orders" : orders[1],
@@ -26,19 +25,34 @@ def get_dashboard_stats_transformer(
     return response_data
 
 
-def dashboard_revenue_transformer(params:DashboardRevenueParamSchema, revenue, revenue_by_date):
+def dashboard_revenue_transformer(
+    params: ReportParamSchema, revenue, revenue_by_date
+):
     params = params.model_dump()
     revenue = dict(revenue._mapping)
     revenue_by_date = [
-        RevenueByDateSchema
-        .model_validate(item, from_attributes=True)
-        .model_dump()
+        RevenueByDateSchema.model_validate(item, from_attributes=True).model_dump()
         for item in revenue_by_date
     ]
-    data = {**params, **revenue, "revenue_by_date":revenue_by_date}
-    response_date = (
-        DashbardRevenueResponseSchema
-        .model_validate(data)
-        .model_dump()
-    )
+    data = {**params, **revenue, "revenue_by_date": revenue_by_date}
+    response_date = DashboardRevenueResponseSchema.model_validate(data).model_dump()
     return response_date
+
+
+def dashboard_orders_transformer(params: ReportParamSchema, summery, order_trend):
+    params = params.model_dump()
+    total_order = dict(summery._mapping)
+    status_summary = StatusSummary.model_validate(summery, from_attributes=True).model_dump()
+    order_trend = [
+        OrderTrend.model_validate(item, from_attributes=True).model_dump()
+        for item in order_trend
+    ]
+    data = {
+        **params,
+        **total_order,
+        "status_summary": status_summary,
+        "order_trend": order_trend,
+    }
+    response_data = DashBoardOrdersResponseSchema.model_validate(data).model_dump()
+    return response_data
+

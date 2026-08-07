@@ -1,0 +1,1174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>FoodieFreak - Orders Report</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f5f7fa;
+            color: #1f2937;
+            line-height: 1.5;
+        }
+
+        .report {
+            width: 100%;
+            max-width: 1100px;
+            margin: 30px auto;
+            background: #ffffff;
+        }
+
+        /* =========================
+           HEADER
+        ========================== */
+
+        .header {
+            background: linear-gradient(135deg, #ff6b35, #f43f5e);
+            color: white;
+            padding: 36px 45px;
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .brand-icon {
+            width: 54px;
+            height: 54px;
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.20);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 28px;
+        }
+
+        .brand-name {
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        .brand-tagline {
+            font-size: 12px;
+            opacity: 0.85;
+        }
+
+        .report-type {
+            text-align: right;
+        }
+
+        .report-type h2 {
+            font-size: 19px;
+        }
+
+        .report-type p {
+            font-size: 12px;
+            opacity: 0.85;
+            margin-top: 4px;
+        }
+
+        /* =========================
+           CONTENT
+        ========================== */
+
+        .content {
+            padding: 38px 45px;
+        }
+
+        .report-title {
+            margin-bottom: 25px;
+        }
+
+        .report-title h1 {
+            font-size: 25px;
+            color: #111827;
+            margin-bottom: 5px;
+        }
+
+        .report-title p {
+            color: #6b7280;
+            font-size: 13px;
+        }
+
+        /* =========================
+           PERIOD
+        ========================== */
+
+        .period-box {
+            background: #fff7ed;
+            border-left: 5px solid #ff6b35;
+            padding: 15px 20px;
+            margin-bottom: 28px;
+            border-radius: 6px;
+        }
+
+        .period-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #9a3412;
+            font-weight: bold;
+        }
+
+        .period-value {
+            margin-top: 4px;
+            font-size: 14px;
+            color: #431407;
+            font-weight: 600;
+        }
+
+        /* =========================
+           MAIN KPI
+        ========================== */
+
+        .main-kpi {
+            background: #111827;
+            color: white;
+            border-radius: 12px;
+            padding: 25px 28px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .main-kpi-label {
+            font-size: 12px;
+            color: #d1d5db;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .main-kpi-value {
+            font-size: 36px;
+            font-weight: 700;
+            margin-top: 3px;
+        }
+
+        .main-kpi-description {
+            color: #9ca3af;
+            font-size: 11px;
+        }
+
+        .main-kpi-icon {
+            font-size: 42px;
+        }
+
+        /* =========================
+           STATUS CARDS
+        ========================== */
+
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            margin-bottom: 32px;
+        }
+
+        .status-card {
+            border: 1px solid #e5e7eb;
+            border-radius: 9px;
+            padding: 15px 12px;
+            text-align: center;
+        }
+
+        .status-value {
+            font-size: 22px;
+            font-weight: 700;
+            color: #111827;
+        }
+
+        .status-label {
+            margin-top: 4px;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            color: #6b7280;
+        }
+
+        .status-marker {
+            width: 30px;
+            height: 4px;
+            margin: 10px auto 0;
+            border-radius: 5px;
+        }
+
+        .pending {
+            background: #f59e0b;
+        }
+
+        .preparing {
+            background: #3b82f6;
+        }
+
+        .ready {
+            background: #8b5cf6;
+        }
+
+        .completed {
+            background: #22c55e;
+        }
+
+        .cancelled {
+            background: #ef4444;
+        }
+
+        /* =========================
+           SECTIONS
+        ========================== */
+
+        .section {
+            margin-top: 32px;
+        }
+
+        .section-header {
+            margin-bottom: 16px;
+            padding-bottom: 9px;
+            border-bottom: 2px solid #f3f4f6;
+        }
+
+        .section-title {
+            font-size: 17px;
+            font-weight: 700;
+            color: #111827;
+        }
+
+        .section-subtitle {
+            font-size: 12px;
+            color: #9ca3af;
+            margin-top: 3px;
+        }
+
+        /* =========================
+           STATUS DISTRIBUTION
+        ========================== */
+
+        .distribution-container {
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 20px;
+            background: #fafafa;
+        }
+
+        .distribution-row {
+            margin-bottom: 16px;
+        }
+
+        .distribution-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .distribution-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            margin-bottom: 6px;
+        }
+
+        .distribution-name {
+            font-weight: 600;
+        }
+
+        .distribution-count {
+            color: #6b7280;
+        }
+
+        .bar-background {
+            height: 9px;
+            background: #e5e7eb;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .bar {
+            height: 100%;
+            border-radius: 10px;
+        }
+
+        /* =========================
+           ORDER TREND
+        ========================== */
+
+        .trend-container {
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 20px;
+            background: #fafafa;
+        }
+
+        .trend-row {
+            margin-bottom: 16px;
+        }
+
+        .trend-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            margin-bottom: 6px;
+        }
+
+        .trend-date {
+            font-weight: 600;
+        }
+
+        .trend-orders {
+            font-weight: 700;
+            color: #ea580c;
+        }
+
+        .trend-bar {
+            height: 10px;
+            background: linear-gradient(90deg, #ff6b35, #f43f5e);
+            border-radius: 10px;
+        }
+
+        /* =========================
+           TABLE
+        ========================== */
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: #111827;
+            color: white;
+        }
+
+        th {
+            padding: 12px 14px;
+            font-size: 11px;
+            text-align: left;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        td {
+            padding: 13px 14px;
+            font-size: 13px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        tbody tr:nth-child(even) {
+            background: #f9fafb;
+        }
+
+        .order-count {
+            font-weight: 700;
+            color: #ea580c;
+        }
+
+        /* =========================
+           SUMMARY METRICS
+        ========================== */
+
+        .summary-box {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 22px;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 18px;
+        }
+
+        .summary-item {
+            padding: 10px;
+        }
+
+        .summary-label {
+            font-size: 11px;
+            color: #6b7280;
+        }
+
+        .summary-value {
+            display: block;
+            margin-top: 3px;
+            font-size: 17px;
+            color: #111827;
+        }
+
+        /* =========================
+           FOOTER
+        ========================== */
+
+        .footer {
+            background: #111827;
+            color: #d1d5db;
+            padding: 22px 45px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 10px;
+        }
+
+        .footer-brand {
+            color: #fb923c;
+            font-weight: bold;
+        }
+
+        /* =========================
+           PDF / PRINT
+        ========================== */
+
+        @media print {
+
+            body {
+                background: white;
+            }
+
+            .report {
+                margin: 0;
+                max-width: 100%;
+            }
+
+            .section,
+            .status-card,
+            .summary-box,
+            table {
+                page-break-inside: avoid;
+            }
+        }
+
+    </style>
+</head>
+
+<body>
+
+<div class="report">
+
+    <!-- =========================
+         HEADER
+    ========================== -->
+
+    <header class="header">
+
+        <div class="header-top">
+
+            <div class="brand">
+
+                <div class="brand-icon">
+                    🍴
+                </div>
+
+                <div>
+                    <div class="brand-name">
+                        FoodieFreak
+                    </div>
+
+                    <div class="brand-tagline">
+                        Order Management & Analytics
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="report-type">
+
+                <h2>Order Analytics</h2>
+
+                <p>
+                    Operational Performance Report
+                </p>
+
+            </div>
+
+        </div>
+
+    </header>
+
+
+    <main class="content">
+
+        <!-- =========================
+             TITLE
+        ========================== -->
+
+        <div class="report-title">
+
+            <h1>
+                Orders Performance Report
+            </h1>
+
+            <p>
+                Detailed analysis of order volume, status distribution
+                and daily ordering activity.
+            </p>
+
+        </div>
+
+
+        <!-- =========================
+             REPORTING PERIOD
+        ========================== -->
+
+        <div class="period-box">
+
+            <div class="period-label">
+                Reporting Period
+            </div>
+
+            <div class="period-value">
+
+                {% if start_date and end_date %}
+
+                    {{ start_date }} — {{ end_date }}
+
+                {% elif start_date %}
+
+                    From {{ start_date }}
+
+                {% elif end_date %}
+
+                    Up to {{ end_date }}
+
+                {% else %}
+
+                    All Available Records
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+
+        <!-- =========================
+             TOTAL ORDERS
+        ========================== -->
+
+        <div class="main-kpi">
+
+            <div>
+
+                <div class="main-kpi-label">
+                    Total Orders
+                </div>
+
+                <div class="main-kpi-value">
+                    {{ total_orders or 0 }}
+                </div>
+
+                <div class="main-kpi-description">
+                    Total orders received during the reporting period
+                </div>
+
+            </div>
+
+            <div class="main-kpi-icon">
+                🧾
+            </div>
+
+        </div>
+
+
+        <!-- =========================
+             STATUS KPI CARDS
+        ========================== -->
+
+        <div class="status-grid">
+
+            <div class="status-card">
+
+                <div class="status-value">
+                    {{ status_summary.pending or 0 }}
+                </div>
+
+                <div class="status-label">
+                    Pending
+                </div>
+
+                <div class="status-marker pending"></div>
+
+            </div>
+
+
+            <div class="status-card">
+
+                <div class="status-value">
+                    {{ status_summary.preparing or 0 }}
+                </div>
+
+                <div class="status-label">
+                    Preparing
+                </div>
+
+                <div class="status-marker preparing"></div>
+
+            </div>
+
+
+            <div class="status-card">
+
+                <div class="status-value">
+                    {{ status_summary.ready or 0 }}
+                </div>
+
+                <div class="status-label">
+                    Ready
+                </div>
+
+                <div class="status-marker ready"></div>
+
+            </div>
+
+
+            <div class="status-card">
+
+                <div class="status-value">
+                    {{ status_summary.completed or 0 }}
+                </div>
+
+                <div class="status-label">
+                    Completed
+                </div>
+
+                <div class="status-marker completed"></div>
+
+            </div>
+
+
+            <div class="status-card">
+
+                <div class="status-value">
+                    {{ status_summary.cancelled or 0 }}
+                </div>
+
+                <div class="status-label">
+                    Cancelled
+                </div>
+
+                <div class="status-marker cancelled"></div>
+
+            </div>
+
+        </div>
+
+
+        <!-- =========================
+             STATUS DISTRIBUTION
+        ========================== -->
+
+        <section class="section">
+
+            <div class="section-header">
+
+                <div class="section-title">
+                    Order Status Distribution
+                </div>
+
+                <div class="section-subtitle">
+                    Percentage distribution of orders by current status
+                </div>
+
+            </div>
+
+
+            <div class="distribution-container">
+
+                <!-- PENDING -->
+
+                <div class="distribution-row">
+
+                    <div class="distribution-info">
+
+                        <span class="distribution-name">
+                            Pending
+                        </span>
+
+                        <span class="distribution-count">
+
+                            {{ status_summary.pending }}
+
+                            {% if total_orders %}
+                                ({{ "%.1f"|format(
+                                    status_summary.pending / total_orders * 100
+                                ) }}%)
+                            {% endif %}
+
+                        </span>
+
+                    </div>
+
+                    <div class="bar-background">
+
+                        <div
+                            class="bar pending"
+                            style="width:
+                            {% if total_orders %}
+                                {{ status_summary.pending / total_orders * 100 }}%
+                            {% else %}
+                                0%
+                            {% endif %}
+                            ">
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- PREPARING -->
+
+                <div class="distribution-row">
+
+                    <div class="distribution-info">
+
+                        <span class="distribution-name">
+                            Preparing
+                        </span>
+
+                        <span class="distribution-count">
+
+                            {{ status_summary.preparing }}
+
+                            {% if total_orders %}
+                                ({{ "%.1f"|format(
+                                    status_summary.preparing / total_orders * 100
+                                ) }}%)
+                            {% endif %}
+
+                        </span>
+
+                    </div>
+
+                    <div class="bar-background">
+
+                        <div
+                            class="bar preparing"
+                            style="width:
+                            {% if total_orders %}
+                                {{ status_summary.preparing / total_orders * 100 }}%
+                            {% else %}
+                                0%
+                            {% endif %}
+                            ">
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- READY -->
+
+                <div class="distribution-row">
+
+                    <div class="distribution-info">
+
+                        <span class="distribution-name">
+                            Ready
+                        </span>
+
+                        <span class="distribution-count">
+
+                            {{ status_summary.ready }}
+
+                            {% if total_orders %}
+                                ({{ "%.1f"|format(
+                                    status_summary.ready / total_orders * 100
+                                ) }}%)
+                            {% endif %}
+
+                        </span>
+
+                    </div>
+
+                    <div class="bar-background">
+
+                        <div
+                            class="bar ready"
+                            style="width:
+                            {% if total_orders %}
+                                {{ status_summary.ready / total_orders * 100 }}%
+                            {% else %}
+                                0%
+                            {% endif %}
+                            ">
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- COMPLETED -->
+
+                <div class="distribution-row">
+
+                    <div class="distribution-info">
+
+                        <span class="distribution-name">
+                            Completed
+                        </span>
+
+                        <span class="distribution-count">
+
+                            {{ status_summary.completed }}
+
+                            {% if total_orders %}
+                                ({{ "%.1f"|format(
+                                    status_summary.completed / total_orders * 100
+                                ) }}%)
+                            {% endif %}
+
+                        </span>
+
+                    </div>
+
+                    <div class="bar-background">
+
+                        <div
+                            class="bar completed"
+                            style="width:
+                            {% if total_orders %}
+                                {{ status_summary.completed / total_orders * 100 }}%
+                            {% else %}
+                                0%
+                            {% endif %}
+                            ">
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- CANCELLED -->
+
+                <div class="distribution-row">
+
+                    <div class="distribution-info">
+
+                        <span class="distribution-name">
+                            Cancelled
+                        </span>
+
+                        <span class="distribution-count">
+
+                            {{ status_summary.cancelled }}
+
+                            {% if total_orders %}
+                                ({{ "%.1f"|format(
+                                    status_summary.cancelled / total_orders * 100
+                                ) }}%)
+                            {% endif %}
+
+                        </span>
+
+                    </div>
+
+                    <div class="bar-background">
+
+                        <div
+                            class="bar cancelled"
+                            style="width:
+                            {% if total_orders %}
+                                {{ status_summary.cancelled / total_orders * 100 }}%
+                            {% else %}
+                                0%
+                            {% endif %}
+                            ">
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =========================
+             DAILY ORDER TREND
+        ========================== -->
+
+        <section class="section">
+
+            <div class="section-header">
+
+                <div class="section-title">
+                    Daily Order Trend
+                </div>
+
+                <div class="section-subtitle">
+                    Number of orders received on each active date
+                </div>
+
+            </div>
+
+
+            <div class="trend-container">
+
+                {% for item in order_trend %}
+
+                    <div class="trend-row">
+
+                        <div class="trend-info">
+
+                            <span class="trend-date">
+                                {{ item.t_date }}
+                            </span>
+
+                            <span class="trend-orders">
+                                {{ item.orders }} Orders
+                            </span>
+
+                        </div>
+
+
+                        <div class="bar-background">
+
+                            <div
+                                class="trend-bar"
+                                style="width:
+                                {% if total_orders %}
+                                    {{ item.orders / total_orders * 100 }}%
+                                {% else %}
+                                    0%
+                                {% endif %}
+                                ">
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+        </section>
+
+
+        <!-- =========================
+             DAILY BREAKDOWN TABLE
+        ========================== -->
+
+        <section class="section">
+
+            <div class="section-header">
+
+                <div class="section-title">
+                    Daily Order Breakdown
+                </div>
+
+                <div class="section-subtitle">
+                    Detailed order volume by date
+                </div>
+
+            </div>
+
+
+            <table>
+
+                <thead>
+
+                    <tr>
+                        <th>Date</th>
+                        <th>Orders</th>
+                        <th>Contribution</th>
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                    {% for item in order_trend %}
+
+                        <tr>
+
+                            <td>
+                                {{ item.t_date }}
+                            </td>
+
+                            <td class="order-count">
+                                {{ item.orders }}
+                            </td>
+
+                            <td>
+
+                                {% if total_orders %}
+
+                                    {{ "%.2f"|format(
+                                        item.orders / total_orders * 100
+                                    ) }}%
+
+                                {% else %}
+
+                                    0%
+
+                                {% endif %}
+
+                            </td>
+
+                        </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </section>
+
+
+        <!-- =========================
+             OPERATIONAL SUMMARY
+        ========================== -->
+
+        <section class="section">
+
+            <div class="section-header">
+
+                <div class="section-title">
+                    Operational Summary
+                </div>
+
+                <div class="section-subtitle">
+                    Key order-processing indicators
+                </div>
+
+            </div>
+
+
+            <div class="summary-box">
+
+                <div class="summary-grid">
+
+                    <div class="summary-item">
+
+                        <span class="summary-label">
+                            Total Orders
+                        </span>
+
+                        <strong class="summary-value">
+                            {{ total_orders or 0 }}
+                        </strong>
+
+                    </div>
+
+
+                    <div class="summary-item">
+
+                        <span class="summary-label">
+                            Active Order Days
+                        </span>
+
+                        <strong class="summary-value">
+                            {{ order_trend | length }}
+                        </strong>
+
+                    </div>
+
+
+                    <div class="summary-item">
+
+                        <span class="summary-label">
+                            Completion Rate
+                        </span>
+
+                        <strong class="summary-value">
+
+                            {% if total_orders %}
+
+                                {{ "%.2f"|format(
+                                    status_summary.completed
+                                    / total_orders
+                                    * 100
+                                ) }}%
+
+                            {% else %}
+
+                                0%
+
+                            {% endif %}
+
+                        </strong>
+
+                    </div>
+
+
+                    <div class="summary-item">
+
+                        <span class="summary-label">
+                            Cancellation Rate
+                        </span>
+
+                        <strong class="summary-value">
+
+                            {% if total_orders %}
+
+                                {{ "%.2f"|format(
+                                    status_summary.cancelled
+                                    / total_orders
+                                    * 100
+                                ) }}%
+
+                            {% else %}
+
+                                0%
+
+                            {% endif %}
+
+                        </strong>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <!-- =========================
+         FOOTER
+    ========================== -->
+
+    <footer class="footer">
+
+        <div>
+            <span class="footer-brand">
+                FoodieFreak
+            </span>
+
+            &nbsp;|&nbsp;
+
+            Orders Analytics Report
+        </div>
+
+        <div>
+            Confidential • System Generated Report
+        </div>
+
+    </footer>
+
+</div>
+
+</body>
+</html>

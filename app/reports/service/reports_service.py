@@ -4,12 +4,11 @@ from app.utility.enums import OrderStatusEnum, PaymentStatusEnum
 from sqlalchemy import DATE, and_, case, func
 from sqlalchemy.orm import Session
 from app.utility.response_utility import apply_filters
-from app.reports.schema.reports_schema import DashboardRevenueParamSchema
+from app.reports.schema.reports_schema import ReportParamSchema
 from app.utility.pdf_genration_utility import generate_pdf_response
 from app.reports.transformer.reports_transformer import (
-    get_dashboard_stats_transformer, dashboard_revenue_transformer
+    get_dashboard_stats_transformer, dashboard_revenue_transformer, dashboard_orders_transformer
 )
-
 
 def get_dashboard_stats_service(db: Session):
 
@@ -64,7 +63,8 @@ def get_dashboard_stats_service(db: Session):
                 )
             ),
             0,
-        ).label("total_revenue")).one()
+        ).label("total_revenue"),
+    ).one()
 
     total_customers = (
         db.query(func.count(User.id))
@@ -78,15 +78,12 @@ def get_dashboard_stats_service(db: Session):
         .scalar()
     )
     response_data = get_dashboard_stats_transformer(
-        orders, 
-        revenue, 
-        total_customers, 
-        todays_menu_items
-        )
+        orders, revenue, total_customers, todays_menu_items
+    )
     return response_data
 
 
-def dashboard_revenue_service(db: Session, params: DashboardRevenueParamSchema):
+def dashboard_revenue_service(db: Session, params: ReportParamSchema):
     revenue = db.query(
         func.sum(Payment.amount).label("total_revenue"),
         func.count(Payment.id).label("total_transactions"),
@@ -114,4 +111,36 @@ def dashboard_revenue_service(db: Session, params: DashboardRevenueParamSchema):
             data=response_data,
             filename="dashboard_revenue_report.pdf"
         )
+    return response_data
+
+
+def dashboard_orders_service(db: Session, params: ReportParamSchema):
+    summery = db.query(
+        func.count(Order.id).label("total_orders"),
+        func.count(Order.status).filter(Order.status == OrderStatusEnum.PENDING).label("pending"),
+        func.count(Order.status).filter(Order.status == OrderStatusEnum.PREPARING).label("preparing"),
+        func.count(Order.status).filter(Order.status == OrderStatusEnum.READY).label("ready"),
+        func.count(Order.status).filter(Order.status == OrderStatusEnum.COMPLETED).label("completed"),
+        func.count(Order.status).filter(Order.status == OrderStatusEnum.CANCELLED).label("cancelled"),
+    )
+    summery = apply_filters(body=params, model=Order, query=summery)
+    summery = summery.one_or_none()
+
+    order_trend = db.query(
+        func.date(Order.created_at).label("t_date"),
+        func.count(Order.id).label("orders"),
+    )
+    order_trend = apply_filters(body=params, model=Order, query=order_trend)
+    order_trend = (
+        order_trend.group_by(func.date(Order.created_at))
+        .order_by(func.date(Order.created_at).desc())
+        .all()
+    )
+    response_data = dashboard_orders_transformer(params, summery, order_trend)
+    if params.pdf:
+            return generate_pdf_response(
+                template_name="dashboard_orders.html",
+                data=response_data,
+                filename="dashboard_orders_report.pdf"
+            )
     return response_data
