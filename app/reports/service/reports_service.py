@@ -1,13 +1,14 @@
 from datetime import date, datetime, time, timedelta
 from app.models.common_models import DailyMenu, Order, Payment, User, UserRole
 from app.utility.enums import OrderStatusEnum, PaymentStatusEnum
-from sqlalchemy import DATE, and_, case, func
+from sqlalchemy import DATE, and_, case, distinct, func, desc, asc
 from sqlalchemy.orm import Session
 from app.utility.response_utility import apply_filters
 from app.reports.schema.reports_schema import ReportParamSchema
 from app.utility.pdf_genration_utility import generate_pdf_response
 from app.reports.transformer.reports_transformer import (
-    get_dashboard_stats_transformer, dashboard_revenue_transformer, dashboard_orders_transformer
+    get_dashboard_stats_transformer, dashboard_revenue_transformer, dashboard_orders_transformer,
+    customer_stats_transformer
 )
 
 def get_dashboard_stats_service(db: Session):
@@ -144,3 +145,59 @@ def dashboard_orders_service(db: Session, params: ReportParamSchema):
                 filename="dashboard_orders_report.pdf"
             )
     return response_data
+
+
+def customer_stats_service(db: Session, params: ReportParamSchema):
+    sub_query = db.query(Order.user_id).distinct()
+    total_cust_expr = func.count(distinct(User.id)) * 1.0
+    summary = db.query(
+        func.count(distinct(User.id)).label('total_customers'),
+        func.count(distinct(case((User.is_active == True, User.id)))).label('active_customers'),
+        func.count(distinct(Order.user_id)).label('customer_with_orders'),
+        func.count(case((User.id.notin_(sub_query), 1))).label('customer_wout_orders'),
+        func.count(Order.id).label('total_orders'),
+        (func.count(Order.id) * 1.0 / func.nullif(total_cust_expr, 0)).label('avg_orders'),
+        func.sum(Order.total_amount).label('total_spendings')
+    ).outerjoin(Order, User.id == Order.user_id)
+    
+    top_customers = (
+        db.query(
+            User.id.label("id"),
+            User.name.label("name"),
+            func.count(Order.id).label("total_orders"),
+            func.sum(Order.total_amount).label("total_spent"),
+        )
+        .outerjoin(Order, User.id == Order.user_id)
+        .group_by(User.id, User.name)
+        .order_by(desc("total_orders"))
+    )
+
+    customer_growth = (
+        db.query(
+            func.to_char(User.created_at, 'YYYY-MM').label("period"),
+            func.count(User.id).label("new_customers")
+        )
+        .group_by(func.to_char(User.created_at, 'YYYY-MM'))
+        .order_by(desc("period"))
+    )
+    
+    summary = apply_filters(body=params, model= User, query=summary)
+    top_customers = apply_filters(body=params, model=User, query=top_customers)
+    customer_growth = apply_filters(body=params, model=User, query=customer_growth)
+    
+    try:
+        summary = summary.first()
+        top_customers = top_customers.all()
+        customer_growth = customer_growth.all()
+        response_data = customer_stats_transformer(params, summary, top_customers, customer_growth)
+        
+        if params.pdf:
+            return generate_pdf_response(
+                template_name="customer_stats.html",
+                data=response_data,
+                filename="customer_stats_report.pdf"
+            )
+        return response_data
+    except Exception as e:
+        return str(e)
+    

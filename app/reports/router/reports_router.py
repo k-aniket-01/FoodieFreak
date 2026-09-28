@@ -4,7 +4,8 @@ from app.database import get_db
 from app.utility.auth_utility import require_owner 
 from app.reports.schema.reports_schema import ReportParamSchema
 from app.reports.service.reports_service import (
-    get_dashboard_stats_service, dashboard_revenue_service, dashboard_orders_service
+    get_dashboard_stats_service, dashboard_revenue_service, dashboard_orders_service,
+    customer_stats_service,
 )
 
 reports_router = APIRouter()
@@ -26,4 +27,12 @@ def get_dashboard_orders(
         params: ReportParamSchema=Depends()
     ):
     response_data = dashboard_orders_service(db, params)
+    return response_data
+
+@reports_router.get('/dashboard/customer/stats', dependencies=[Depends(require_owner)])
+def get_customer_stats(
+        db: Session = Depends(get_db),
+        params: ReportParamSchema = Depends()
+    ):
+    response_data = customer_stats_service(db, params)
     return response_data

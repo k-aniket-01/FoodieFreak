@@ -49,3 +49,27 @@ class DashBoardOrdersResponseSchema(DateParamResSchema):
     status_summary : StatusSummary
     order_trend : list[OrderTrend] = []
     
+class CustomerStatsSummery(BaseModel):
+    total_customers : Optional[int] = None
+    active_customers : Optional[int] = None
+    customer_with_orders : Optional[int] = None
+    customer_wout_orders : Optional[int] = None
+    total_orders : Optional[int] = None
+    avg_orders : Optional[int] = None
+    total_spendings : Optional[int] = None    
+    
+class CustomerStatTopCustomers(BaseModel):
+    id : Optional[int] = None
+    name : Optional[str] = None
+    total_orders : Optional[int] = 0
+    total_spent : Optional[int] = 0
+    
+class CustomerStatCustomerGrowth(BaseModel):
+    period : Optional[str] = None
+    new_customers : Optional[int] = 0
+    
+class CustomerStatsResponseSchema(DateParamResSchema):
+    summery : CustomerStatsSummery = {}
+    top_customers : list[CustomerStatTopCustomers] = []
+    customer_growth : list[CustomerStatCustomerGrowth] = []
+    

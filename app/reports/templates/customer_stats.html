@@ -1,0 +1,1314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>FoodieFreak - Customer Statistics Report</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f5f7fa;
+            color: #1f2937;
+            line-height: 1.5;
+        }
+
+        .report {
+            width: 100%;
+            max-width: 1100px;
+            margin: 30px auto;
+            background: #ffffff;
+        }
+
+        /* =========================
+           HEADER
+        ========================== */
+
+        .header {
+            background: linear-gradient(135deg, #ff6b35, #f43f5e);
+            color: white;
+            padding: 36px 45px;
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .brand-icon {
+            width: 54px;
+            height: 54px;
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.20);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 28px;
+        }
+
+        .brand-name {
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        .brand-tagline {
+            font-size: 12px;
+            opacity: 0.85;
+        }
+
+        .report-type {
+            text-align: right;
+        }
+
+        .report-type h2 {
+            font-size: 19px;
+        }
+
+        .report-type p {
+            font-size: 12px;
+            opacity: 0.85;
+            margin-top: 4px;
+        }
+
+        /* =========================
+           CONTENT
+        ========================== */
+
+        .content {
+            padding: 38px 45px;
+        }
+
+        .report-title {
+            margin-bottom: 25px;
+        }
+
+        .report-title h1 {
+            font-size: 25px;
+            color: #111827;
+            margin-bottom: 5px;
+        }
+
+        .report-title p {
+            color: #6b7280;
+            font-size: 13px;
+        }
+
+        /* =========================
+           PERIOD
+        ========================== */
+
+        .period-box {
+            background: #fff7ed;
+            border-left: 5px solid #ff6b35;
+            padding: 15px 20px;
+            margin-bottom: 28px;
+            border-radius: 6px;
+        }
+
+        .period-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #9a3412;
+            font-weight: bold;
+        }
+
+        .period-value {
+            margin-top: 4px;
+            font-size: 14px;
+            color: #431407;
+            font-weight: 600;
+        }
+
+        /* =========================
+           MAIN KPI
+        ========================== */
+
+        .main-kpi {
+            background: #111827;
+            color: white;
+            border-radius: 12px;
+            padding: 25px 28px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .main-kpi-label {
+            font-size: 12px;
+            color: #d1d5db;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .main-kpi-value {
+            font-size: 36px;
+            font-weight: 700;
+            margin-top: 3px;
+        }
+
+        .main-kpi-description {
+            color: #9ca3af;
+            font-size: 11px;
+        }
+
+        .main-kpi-icon {
+            font-size: 42px;
+        }
+
+        /* =========================
+           CUSTOMER KPI CARDS
+        ========================== */
+
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 32px;
+        }
+
+        .kpi-card {
+            border: 1px solid #e5e7eb;
+            border-radius: 9px;
+            padding: 17px 15px;
+            text-align: center;
+        }
+
+        .kpi-value {
+            font-size: 23px;
+            font-weight: 700;
+            color: #111827;
+        }
+
+        .kpi-label {
+            margin-top: 4px;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            color: #6b7280;
+        }
+
+        .kpi-marker {
+            width: 30px;
+            height: 4px;
+            margin: 10px auto 0;
+            border-radius: 5px;
+        }
+
+        .active {
+            background: #22c55e;
+        }
+
+        .with-orders {
+            background: #3b82f6;
+        }
+
+        .without-orders {
+            background: #9ca3af;
+        }
+
+        .orders {
+            background: #8b5cf6;
+        }
+
+        .average {
+            background: #f59e0b;
+        }
+
+        .spending {
+            background: #ef4444;
+        }
+
+        /* =========================
+           SECTIONS
+        ========================== */
+
+        .section {
+            margin-top: 32px;
+        }
+
+        .section-header {
+            margin-bottom: 16px;
+            padding-bottom: 9px;
+            border-bottom: 2px solid #f3f4f6;
+        }
+
+        .section-title {
+            font-size: 17px;
+            font-weight: 700;
+            color: #111827;
+        }
+
+        .section-subtitle {
+            font-size: 12px;
+            color: #9ca3af;
+            margin-top: 3px;
+        }
+
+        /* =========================
+           CUSTOMER ACTIVITY
+        ========================== */
+
+        .activity-container {
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 20px;
+            background: #fafafa;
+        }
+
+        .activity-row {
+            margin-bottom: 18px;
+        }
+
+        .activity-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .activity-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            margin-bottom: 6px;
+        }
+
+        .activity-name {
+            font-weight: 600;
+        }
+
+        .activity-count {
+            color: #6b7280;
+        }
+
+        .bar-background {
+            height: 10px;
+            background: #e5e7eb;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .bar {
+            height: 100%;
+            border-radius: 10px;
+        }
+
+        .active-bar {
+            background: #22c55e;
+        }
+
+        .with-orders-bar {
+            background: #3b82f6;
+        }
+
+        .without-orders-bar {
+            background: #9ca3af;
+        }
+
+        /* =========================
+           CUSTOMER GROWTH
+        ========================== */
+
+        .growth-container {
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 20px;
+            background: #fafafa;
+        }
+
+        .growth-row {
+            margin-bottom: 16px;
+        }
+
+        .growth-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .growth-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            margin-bottom: 6px;
+        }
+
+        .growth-period {
+            font-weight: 600;
+        }
+
+        .growth-value {
+            font-weight: 700;
+            color: #ea580c;
+        }
+
+        .growth-bar {
+            height: 10px;
+            background: linear-gradient(90deg, #ff6b35, #f43f5e);
+            border-radius: 10px;
+        }
+
+        /* =========================
+           TABLE
+        ========================== */
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: #111827;
+            color: white;
+        }
+
+        th {
+            padding: 12px 14px;
+            font-size: 11px;
+            text-align: left;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        td {
+            padding: 13px 14px;
+            font-size: 13px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        tbody tr:nth-child(even) {
+            background: #f9fafb;
+        }
+
+        .customer-name {
+            font-weight: 600;
+            color: #111827;
+        }
+
+        .order-count {
+            font-weight: 700;
+            color: #ea580c;
+        }
+
+        .spent {
+            font-weight: 700;
+            color: #16a34a;
+        }
+
+        .no-spending {
+            color: #9ca3af;
+        }
+
+        /* =========================
+           CUSTOMER SUMMARY
+        ========================== */
+
+        .summary-box {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 22px;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 18px;
+        }
+
+        .summary-item {
+            padding: 10px;
+        }
+
+        .summary-label {
+            font-size: 11px;
+            color: #6b7280;
+        }
+
+        .summary-value {
+            display: block;
+            margin-top: 3px;
+            font-size: 17px;
+            color: #111827;
+        }
+
+        /* =========================
+           FOOTER
+        ========================== */
+
+        .footer {
+            background: #111827;
+            color: #d1d5db;
+            padding: 22px 45px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 10px;
+        }
+
+        .footer-brand {
+            color: #fb923c;
+            font-weight: bold;
+        }
+
+        /* =========================
+           PDF / PRINT
+        ========================== */
+
+        @media print {
+
+            body {
+                background: white;
+            }
+
+            .report {
+                margin: 0;
+                max-width: 100%;
+            }
+
+            .section,
+            .kpi-card,
+            .summary-box,
+            table {
+                page-break-inside: avoid;
+            }
+        }
+
+        @media (max-width: 700px) {
+
+            .content {
+                padding: 25px;
+            }
+
+            .header {
+                padding: 25px;
+            }
+
+            .header-top {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 20px;
+            }
+
+            .report-type {
+                text-align: left;
+            }
+
+            .kpi-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .summary-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+    </style>
+</head>
+
+<body>
+
+<div class="report">
+
+    <!-- =========================
+         HEADER
+    ========================== -->
+
+    <header class="header">
+
+        <div class="header-top">
+
+            <div class="brand">
+
+
+                <div>
+                    <div class="brand-name">
+                        FoodieFreak
+                    </div>
+
+                    <div class="brand-tagline">
+                        Order Management & Analytics
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="report-type">
+
+                <h2>Customer Analytics</h2>
+
+                <p>
+                    Customer Statistics Report
+                </p>
+
+            </div>
+
+        </div>
+
+    </header>
+
+
+    <main class="content">
+
+        <!-- =========================
+             TITLE
+        ========================== -->
+
+        <div class="report-title">
+
+            <h1>
+                Customer Statistics Report
+            </h1>
+
+            <p>
+                Detailed analysis of customer activity, ordering behavior,
+                spending and customer growth.
+            </p>
+
+        </div>
+
+
+        <!-- =========================
+             REPORTING PERIOD
+        ========================== -->
+
+        <div class="period-box">
+
+            <div class="period-label">
+                Reporting Period
+            </div>
+
+            <div class="period-value">
+
+                {% if start_date and end_date %}
+
+                    {{ start_date }} — {{ end_date }}
+
+                {% elif start_date %}
+
+                    From {{ start_date }}
+
+                {% elif end_date %}
+
+                    Up to {{ end_date }}
+
+                {% else %}
+
+                    All Available Records
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+
+        <!-- =========================
+             TOTAL CUSTOMERS
+        ========================== -->
+
+        <div class="main-kpi">
+
+            <div>
+
+                <div class="main-kpi-label">
+                    Total Customers
+                </div>
+
+                <div class="main-kpi-value">
+                    {{ summery.total_customers or 0 }}
+                </div>
+
+                <div class="main-kpi-description">
+                    Total customers registered during the reporting period
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- =========================
+             CUSTOMER KPI CARDS
+        ========================== -->
+
+        <div class="kpi-grid">
+
+            <div class="kpi-card">
+
+                <div class="kpi-value">
+                    {{ summery.active_customers or 0 }}
+                </div>
+
+                <div class="kpi-label">
+                    Active Customers
+                </div>
+
+                <div class="kpi-marker active"></div>
+
+            </div>
+
+
+            <div class="kpi-card">
+
+                <div class="kpi-value">
+                    {{ summery.customer_with_orders or 0 }}
+                </div>
+
+                <div class="kpi-label">
+                    Customers With Orders
+                </div>
+
+                <div class="kpi-marker with-orders"></div>
+
+            </div>
+
+
+            <div class="kpi-card">
+
+                <div class="kpi-value">
+                    {{ summery.customer_wout_orders or 0 }}
+                </div>
+
+                <div class="kpi-label">
+                    Customers Without Orders
+                </div>
+
+                <div class="kpi-marker without-orders"></div>
+
+            </div>
+
+
+            <div class="kpi-card">
+
+                <div class="kpi-value">
+                    {{ summery.total_orders or 0 }}
+                </div>
+
+                <div class="kpi-label">
+                    Total Orders
+                </div>
+
+                <div class="kpi-marker orders"></div>
+
+            </div>
+
+
+            <div class="kpi-card">
+
+                <div class="kpi-value">
+                    {{ summery.avg_orders or 0 }}
+                </div>
+
+                <div class="kpi-label">
+                    Average Orders / Customer
+                </div>
+
+                <div class="kpi-marker average"></div>
+
+            </div>
+
+
+            <div class="kpi-card">
+
+                <div class="kpi-value">
+                    ₹{{ "%.2f"|format(summery.total_spendings or 0) }}
+                </div>
+
+                <div class="kpi-label">
+                    Total Spendings
+                </div>
+
+                <div class="kpi-marker spending"></div>
+
+            </div>
+
+        </div>
+
+
+        <!-- =========================
+             CUSTOMER ACTIVITY
+        ========================== -->
+
+        <section class="section">
+
+            <div class="section-header">
+
+                <div class="section-title">
+                    Customer Activity Distribution
+                </div>
+
+                <div class="section-subtitle">
+                    Distribution of customers based on activity and ordering behavior
+                </div>
+
+            </div>
+
+
+            <div class="activity-container">
+
+                <!-- ACTIVE CUSTOMERS -->
+
+                <div class="activity-row">
+
+                    <div class="activity-info">
+
+                        <span class="activity-name">
+                            Active Customers
+                        </span>
+
+                        <span class="activity-count">
+
+                            {{ summery.active_customers or 0 }}
+
+                            {% if summery.total_customers %}
+                                ({{ "%.1f"|format(
+                                    summery.active_customers /
+                                    summery.total_customers * 100
+                                ) }}%)
+                            {% endif %}
+
+                        </span>
+
+                    </div>
+
+                    <div class="bar-background">
+
+                        <div
+                            class="bar active-bar"
+                            style="width:
+                            {% if summery.total_customers %}
+                                {{ summery.active_customers /
+                                   summery.total_customers * 100 }}%
+                            {% else %}
+                                0%
+                            {% endif %}
+                            ">
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- CUSTOMERS WITH ORDERS -->
+
+                <div class="activity-row">
+
+                    <div class="activity-info">
+
+                        <span class="activity-name">
+                            Customers With Orders
+                        </span>
+
+                        <span class="activity-count">
+
+                            {{ summery.customer_with_orders or 0 }}
+
+                            {% if summery.total_customers %}
+                                ({{ "%.1f"|format(
+                                    summery.customer_with_orders /
+                                    summery.total_customers * 100
+                                ) }}%)
+                            {% endif %}
+
+                        </span>
+
+                    </div>
+
+                    <div class="bar-background">
+
+                        <div
+                            class="bar with-orders-bar"
+                            style="width:
+                            {% if summery.total_customers %}
+                                {{ summery.customer_with_orders /
+                                   summery.total_customers * 100 }}%
+                            {% else %}
+                                0%
+                            {% endif %}
+                            ">
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- CUSTOMERS WITHOUT ORDERS -->
+
+                <div class="activity-row">
+
+                    <div class="activity-info">
+
+                        <span class="activity-name">
+                            Customers Without Orders
+                        </span>
+
+                        <span class="activity-count">
+
+                            {{ summery.customer_wout_orders or 0 }}
+
+                            {% if summery.total_customers %}
+                                ({{ "%.1f"|format(
+                                    summery.customer_wout_orders /
+                                    summery.total_customers * 100
+                                ) }}%)
+                            {% endif %}
+
+                        </span>
+
+                    </div>
+
+                    <div class="bar-background">
+
+                        <div
+                            class="bar without-orders-bar"
+                            style="width:
+                            {% if summery.total_customers %}
+                                {{ summery.customer_wout_orders /
+                                   summery.total_customers * 100 }}%
+                            {% else %}
+                                0%
+                            {% endif %}
+                            ">
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =========================
+             TOP CUSTOMERS
+        ========================== -->
+
+        <section class="section">
+
+            <div class="section-header">
+
+                <div class="section-title">
+                    Top Customers
+                </div>
+
+                <div class="section-subtitle">
+                    Customer-wise order volume and spending during the reporting period
+                </div>
+
+            </div>
+
+
+            <table>
+
+                <thead>
+
+                    <tr>
+                        <th>#</th>
+                        <th>Customer</th>
+                        <th>Customer ID</th>
+                        <th>Orders</th>
+                        <th>Total Spent</th>
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                    {% for customer in top_customers %}
+
+                    <tr>
+
+                        <td>
+                            {{ loop.index }}
+                        </td>
+
+                        <td class="customer-name">
+                            {{ customer.name }}
+                        </td>
+
+                        <td>
+                            {{ customer.id }}
+                        </td>
+
+                        <td class="order-count">
+                            {{ customer.total_orders or 0 }}
+                        </td>
+
+                        <td>
+
+                            {% if customer.total_spent is not none %}
+
+                                <span class="spent">
+                                    ₹{{ "%.2f"|format(customer.total_spent) }}
+                                </span>
+
+                            {% else %}
+
+                                <span class="no-spending">
+                                    ₹0.00
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </section>
+
+
+        <!-- =========================
+             CUSTOMER GROWTH
+        ========================== -->
+
+        <section class="section">
+
+            <div class="section-header">
+
+                <div class="section-title">
+                    Customer Growth
+                </div>
+
+                <div class="section-subtitle">
+                    Number of new customers registered during each reporting period
+                </div>
+
+            </div>
+
+
+            <div class="growth-container">
+
+                {% if customer_growth %}
+
+                    {% set max_growth =
+                        customer_growth
+                        | map(attribute='new_customers')
+                        | max
+                    %}
+
+                    {% for item in customer_growth %}
+
+                    <div class="growth-row">
+
+                        <div class="growth-info">
+
+                            <span class="growth-period">
+                                {{ item.period }}
+                            </span>
+
+                            <span class="growth-value">
+                                {{ item.new_customers }} New Customers
+                            </span>
+
+                        </div>
+
+                        <div class="bar-background">
+
+                            <div
+                                class="growth-bar"
+                                style="width:
+                                {% if max_growth %}
+                                    {{ item.new_customers /
+                                       max_growth * 100 }}%
+                                {% else %}
+                                    0%
+                                {% endif %}
+                                ">
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    {% endfor %}
+
+                {% else %}
+
+                    <div style="text-align:center; color:#9ca3af; font-size:12px;">
+                        No customer growth data available.
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+        </section>
+
+
+        <!-- =========================
+             CUSTOMER GROWTH TABLE
+        ========================== -->
+
+        <section class="section">
+
+            <div class="section-header">
+
+                <div class="section-title">
+                    Customer Growth Breakdown
+                </div>
+
+                <div class="section-subtitle">
+                    Detailed new customer registration by period
+                </div>
+
+            </div>
+
+
+            <table>
+
+                <thead>
+
+                    <tr>
+                        <th>Period</th>
+                        <th>New Customers</th>
+                        <th>Contribution</th>
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                    {% set total_growth = customer_growth
+                        | map(attribute='new_customers')
+                        | sum
+                    %}
+
+                    {% for item in customer_growth %}
+
+                    <tr>
+
+                        <td>
+                            {{ item.period }}
+                        </td>
+
+                        <td class="order-count">
+                            {{ item.new_customers }}
+                        </td>
+
+                        <td>
+
+                            {% if total_growth %}
+
+                                {{ "%.2f"|format(
+                                    item.new_customers /
+                                    total_growth * 100
+                                ) }}%
+
+                            {% else %}
+
+                                0%
+
+                            {% endif %}
+
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </section>
+
+
+        <!-- =========================
+             CUSTOMER SUMMARY
+        ========================== -->
+
+        <section class="section">
+
+            <div class="section-header">
+
+                <div class="section-title">
+                    Customer Summary
+                </div>
+
+                <div class="section-subtitle">
+                    Key customer engagement and spending indicators
+                </div>
+
+            </div>
+
+
+            <div class="summary-box">
+
+                <div class="summary-grid">
+
+                    <div class="summary-item">
+
+                        <span class="summary-label">
+                            Total Customers
+                        </span>
+
+                        <strong class="summary-value">
+                            {{ summery.total_customers or 0 }}
+                        </strong>
+
+                    </div>
+
+
+                    <div class="summary-item">
+
+                        <span class="summary-label">
+                            Active Customers
+                        </span>
+
+                        <strong class="summary-value">
+                            {{ summery.active_customers or 0 }}
+                        </strong>
+
+                    </div>
+
+
+                    <div class="summary-item">
+
+                        <span class="summary-label">
+                            Customers With Orders
+                        </span>
+
+                        <strong class="summary-value">
+                            {{ summery.customer_with_orders or 0 }}
+                        </strong>
+
+                    </div>
+
+
+                    <div class="summary-item">
+
+                        <span class="summary-label">
+                            Customers Without Orders
+                        </span>
+
+                        <strong class="summary-value">
+                            {{ summery.customer_wout_orders or 0 }}
+                        </strong>
+
+                    </div>
+
+
+                    <div class="summary-item">
+
+                        <span class="summary-label">
+                            Total Orders
+                        </span>
+
+                        <strong class="summary-value">
+                            {{ summery.total_orders or 0 }}
+                        </strong>
+
+                    </div>
+
+
+                    <div class="summary-item">
+
+                        <span class="summary-label">
+                            Average Orders Per Customer
+                        </span>
+
+                        <strong class="summary-value">
+                            {{ "%.2f"|format(summery.avg_orders or 0) }}
+                        </strong>
+
+                    </div>
+
+
+                    <div class="summary-item">
+
+                        <span class="summary-label">
+                            Total Customer Spending
+                        </span>
+
+                        <strong class="summary-value">
+                            ₹{{ "%.2f"|format(summery.total_spendings or 0) }}
+                        </strong>
+
+                    </div>
+
+
+                    <div class="summary-item">
+
+                        <span class="summary-label">
+                            Customer Order Conversion
+                        </span>
+
+                        <strong class="summary-value">
+
+                            {% if summery.total_customers %}
+
+                                {{ "%.2f"|format(
+                                    summery.customer_with_orders /
+                                    summery.total_customers * 100
+                                ) }}%
+
+                            {% else %}
+
+                                0%
+
+                            {% endif %}
+
+                        </strong>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <!-- =========================
+         FOOTER
+    ========================== -->
+
+    <footer class="footer">
+
+        <div>
+
+            <span class="footer-brand">
+                FoodieFreak
+            </span>
+
+            &nbsp;|&nbsp;
+
+            Customer Analytics Report
+
+        </div>
+
+        <div>
+            Confidential • System Generated Report
+        </div>
+
+    </footer>
+
+</div>
+
+</body>
+</html>
+

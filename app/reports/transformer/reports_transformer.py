@@ -1,6 +1,7 @@
 from app.reports.schema.reports_schema import (
     DashboardStatsResponseSchema, DashboardRevenueResponseSchema, RevenueByDateSchema, 
-    ReportParamSchema, OrderTrend, DashBoardOrdersResponseSchema, StatusSummary
+    ReportParamSchema, OrderTrend, DashBoardOrdersResponseSchema, StatusSummary, CustomerStatsSummery,
+    CustomerStatTopCustomers, CustomerStatsResponseSchema, CustomerStatCustomerGrowth
 )
 
 def get_dashboard_stats_transformer(
@@ -28,7 +29,7 @@ def get_dashboard_stats_transformer(
 def dashboard_revenue_transformer(
     params: ReportParamSchema, revenue, revenue_by_date
 ):
-    params = params.model_dump()
+    params = params.model_dump(exclude=["pdf"])
     revenue = dict(revenue._mapping)
     revenue_by_date = [
         RevenueByDateSchema.model_validate(item, from_attributes=True).model_dump()
@@ -40,7 +41,7 @@ def dashboard_revenue_transformer(
 
 
 def dashboard_orders_transformer(params: ReportParamSchema, summery, order_trend):
-    params = params.model_dump()
+    params = params.model_dump(exclude=["pdf"])
     total_order = dict(summery._mapping)
     status_summary = StatusSummary.model_validate(summery, from_attributes=True).model_dump()
     order_trend = [
@@ -56,3 +57,32 @@ def dashboard_orders_transformer(params: ReportParamSchema, summery, order_trend
     response_data = DashBoardOrdersResponseSchema.model_validate(data).model_dump()
     return response_data
 
+
+def customer_stats_transformer(params:ReportParamSchema, summary, top_customers, customer_growth):
+    params = params.model_dump(exclude={"pdf"})
+    summary = CustomerStatsSummery.model_validate(
+        summary, from_attributes=True
+    ).model_dump()
+    
+    top_customers = [
+        CustomerStatTopCustomers.model_validate(data, from_attributes=True).model_dump()
+        for data in top_customers
+    ]
+    
+    customer_growth = [
+        CustomerStatCustomerGrowth.model_validate(data, from_attributes=True).model_dump()
+        for data in customer_growth
+    ]
+
+    data = {
+        **params, 
+        "summery":summary, 
+        "top_customers":top_customers, 
+        "customer_growth":customer_growth
+        }
+    
+    response_data = CustomerStatsResponseSchema.model_validate(
+        data, from_attributes=True
+    ).model_dump()
+    
+    return response_data
