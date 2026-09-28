@@ -3,9 +3,10 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.utility.auth_utility import require_owner 
 from app.reports.schema.reports_schema import ReportParamSchema
+from app.utility.response_utility import PaginationRequestSchema
 from app.reports.service.reports_service import (
     get_dashboard_stats_service, dashboard_revenue_service, dashboard_orders_service,
-    customer_stats_service,
+    customer_stats_service, recent_orders_service
 )
 
 reports_router = APIRouter()
@@ -35,4 +36,12 @@ def get_customer_stats(
         params: ReportParamSchema = Depends()
     ):
     response_data = customer_stats_service(db, params)
+    return response_data
+
+@reports_router.get('/dashboard/recent/orders', dependencies=[Depends(require_owner)])
+def get_recent_orders(
+    db:Session = Depends(get_db),
+    params : PaginationRequestSchema = Depends()
+    ):
+    response_data = recent_orders_service(db, params)
     return response_data

@@ -31,7 +31,7 @@ fastapi-cloud-cli==0.23.0
 fastapi-mail==1.6.5
 fastar==0.11.0
 fonttools==4.63.0
--e git+https://github.com/k-aniket-01/FoodieFreak.git@5f517ce4268db754d61eb21defeb050a1dbc3c5c#egg=foodiefreak
+-e git+https://github.com/k-aniket-01/FoodieFreak.git@1f16e999e00c17b36096b3c984b96866c7b1e776#egg=foodiefreak
 greenlet==3.5.2
 h11==0.16.0
 httpcore==1.0.9

@@ -1,7 +1,8 @@
 from app.reports.schema.reports_schema import (
     DashboardStatsResponseSchema, DashboardRevenueResponseSchema, RevenueByDateSchema, 
     ReportParamSchema, OrderTrend, DashBoardOrdersResponseSchema, StatusSummary, CustomerStatsSummery,
-    CustomerStatTopCustomers, CustomerStatsResponseSchema, CustomerStatCustomerGrowth
+    CustomerStatTopCustomers, CustomerStatsResponseSchema, CustomerStatCustomerGrowth,
+    DashboardOrdersResSchema, DashboardOrdersSchema
 )
 
 def get_dashboard_stats_transformer(
@@ -58,31 +59,40 @@ def dashboard_orders_transformer(params: ReportParamSchema, summery, order_trend
     return response_data
 
 
-def customer_stats_transformer(params:ReportParamSchema, summary, top_customers, customer_growth):
+def customer_stats_transformer(params: ReportParamSchema, summary, top_customers, customer_growth):
     params = params.model_dump(exclude={"pdf"})
-    summary = CustomerStatsSummery.model_validate(
-        summary, from_attributes=True
-    ).model_dump()
-    
+    summary = CustomerStatsSummery.model_validate(summary, from_attributes=True).model_dump()
+
     top_customers = [
         CustomerStatTopCustomers.model_validate(data, from_attributes=True).model_dump()
         for data in top_customers
     ]
-    
+
     customer_growth = [
         CustomerStatCustomerGrowth.model_validate(data, from_attributes=True).model_dump()
         for data in customer_growth
     ]
 
     data = {
-        **params, 
-        "summery":summary, 
-        "top_customers":top_customers, 
-        "customer_growth":customer_growth
-        }
-    
-    response_data = CustomerStatsResponseSchema.model_validate(
-        data, from_attributes=True
-    ).model_dump()
-    
+        **params,
+        "summery": summary,
+        "top_customers": top_customers,
+        "customer_growth": customer_growth,
+    }
+
+    response_data = CustomerStatsResponseSchema.model_validate(data, from_attributes=True).model_dump()
+
     return response_data
+
+
+def recent_orders_transformer(data, pagination):
+    data = [
+        DashboardOrdersSchema.model_validate(item, from_attributes=True).model_dump()
+        for item in data    
+    ]
+    orders = {"orders":data, "pagination":pagination}
+    resposne_data = (
+        DashboardOrdersResSchema
+        .model_validate(orders, from_attributes=True).model_dump()
+    )
+    return resposne_data

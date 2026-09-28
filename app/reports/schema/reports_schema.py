@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 from typing import Optional
-from datetime import date
+from datetime import date, datetime
+from app.utility.response_utility import PaginationResponseSchema
 
 class DashboardStatsResponseSchema(BaseModel):
     total_orders : Optional[int] = None
@@ -73,3 +74,14 @@ class CustomerStatsResponseSchema(DateParamResSchema):
     top_customers : list[CustomerStatTopCustomers] = []
     customer_growth : list[CustomerStatCustomerGrowth] = []
     
+class DashboardOrdersSchema(BaseModel):
+    order_id : Optional[int] = None
+    customer_id : Optional[int] = None
+    customer_name : Optional[str] = None
+    item_count : Optional[int] = None
+    total_amount : Optional[int] = None
+    status : Optional[str] = None
+    created_at : Optional[datetime] = None
+class DashboardOrdersResSchema(BaseModel):
+    orders : list[DashboardOrdersSchema] = []
+    pagination : PaginationResponseSchema = None

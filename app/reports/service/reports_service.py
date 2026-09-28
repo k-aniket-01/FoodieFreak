@@ -3,12 +3,12 @@ from app.models.common_models import DailyMenu, Order, Payment, User, UserRole
 from app.utility.enums import OrderStatusEnum, PaymentStatusEnum
 from sqlalchemy import DATE, and_, case, distinct, func, desc, asc
 from sqlalchemy.orm import Session
-from app.utility.response_utility import apply_filters
+from app.utility.response_utility import apply_filters, apply_pagination
 from app.reports.schema.reports_schema import ReportParamSchema
 from app.utility.pdf_genration_utility import generate_pdf_response
 from app.reports.transformer.reports_transformer import (
     get_dashboard_stats_transformer, dashboard_revenue_transformer, dashboard_orders_transformer,
-    customer_stats_transformer
+    customer_stats_transformer, recent_orders_transformer
 )
 
 def get_dashboard_stats_service(db: Session):
@@ -187,7 +187,7 @@ def customer_stats_service(db: Session, params: ReportParamSchema):
     
     try:
         summary = summary.first()
-        top_customers = top_customers.all()
+        top_customers = top_customers.limit(10)
         customer_growth = customer_growth.all()
         response_data = customer_stats_transformer(params, summary, top_customers, customer_growth)
         
@@ -201,3 +201,25 @@ def customer_stats_service(db: Session, params: ReportParamSchema):
     except Exception as e:
         return str(e)
     
+    
+def recent_orders_service(db:Session, params):
+    query = (
+        db.query(
+            Order.id.label("order_id"),
+            Order.user_id.label("customer_id"),
+            Order.total_items.label("item_count"),
+            Order.total_amount,
+            Order.status.label("status"),
+            Order.created_at,
+            User.name.label("customer_name")
+        ).join(
+            User, Order.user_id == User.id
+        )
+    )
+    query = apply_filters(body=params, model=Order, query=query)
+    query = query.order_by(Order.created_at.desc())
+    query, pagination = apply_pagination(body=params, query=query)
+    
+    response_data = recent_orders_transformer(query.all(), pagination)
+    return response_data
+
