@@ -6,7 +6,7 @@ from app.reports.schema.reports_schema import ReportParamSchema
 from app.utility.response_utility import PaginationRequestSchema
 from app.reports.service.reports_service import (
     get_dashboard_stats_service, dashboard_revenue_service, dashboard_orders_service,
-    customer_stats_service, recent_orders_service
+    customer_stats_service, recent_orders_service, analytics_daily_sales_service
 )
 
 reports_router = APIRouter()
@@ -44,4 +44,12 @@ def get_recent_orders(
     params : PaginationRequestSchema = Depends()
     ):
     response_data = recent_orders_service(db, params)
+    return response_data
+
+@reports_router.get('/analytics/daily/sales', dependencies=[Depends(require_owner)])
+def get_analytics_daily_sales(
+    db:Session = Depends(get_db),
+    params : ReportParamSchema = Depends()
+    ):
+    response_data = analytics_daily_sales_service(db, params)
     return response_data

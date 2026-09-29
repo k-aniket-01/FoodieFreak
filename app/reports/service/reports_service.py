@@ -1,3 +1,4 @@
+from fastapi import HTTPException, status
 from datetime import date, datetime, time, timedelta
 from app.models.common_models import DailyMenu, Order, Payment, User, UserRole
 from app.utility.enums import OrderStatusEnum, PaymentStatusEnum
@@ -8,7 +9,7 @@ from app.reports.schema.reports_schema import ReportParamSchema
 from app.utility.pdf_genration_utility import generate_pdf_response
 from app.reports.transformer.reports_transformer import (
     get_dashboard_stats_transformer, dashboard_revenue_transformer, dashboard_orders_transformer,
-    customer_stats_transformer, recent_orders_transformer
+    customer_stats_transformer, recent_orders_transformer, analytics_daily_sales_transformer
 )
 
 def get_dashboard_stats_service(db: Session):
@@ -223,3 +224,42 @@ def recent_orders_service(db:Session, params):
     response_data = recent_orders_transformer(query.all(), pagination)
     return response_data
 
+
+def analytics_daily_sales_service(db: Session, params: ReportParamSchema):
+    if not params.start_date or not params.end_date:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail="ENTER START AND END DATE"
+        )
+    summery = db.query(
+        func.sum(Order.total_amount).label("total_sales"),
+        func.count(Order.id).label("total_orders"),
+        func.sum(Order.total_amount) / func.nullif(func.count(Order.id), 0).label("avg_sale"),
+    )
+    date_series = db.query(
+        func.date(
+            func.generate_series(params.start_date, params.end_date,"1 day")
+        ).label("dt")
+    ).cte(name="date_series")
+    
+    daily_sales = (
+        db.query(
+            date_series.c.dt.label("a_date"),
+            func.count(Order.id).label("order_count"),
+            func.coalesce(func.sum(Order.total_amount), 0).label("sale_amount")
+        )
+        .select_from(date_series)
+        .outerjoin(Order, func.date(Order.created_at) == date_series.c.dt)
+        .group_by(date_series.c.dt)
+        .order_by(date_series.c.dt.desc())
+    )
+    
+    try:
+        summery = apply_filters(body=params, model=Order, query=summery)
+        summery = summery.first()
+        daily_sales = daily_sales.all()
+        response_data = analytics_daily_sales_transformer(params, summery, daily_sales)
+        return response_data
+        
+    except Exception as e:
+        return str(e)
+    

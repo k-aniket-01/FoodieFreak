@@ -1,8 +1,10 @@
+from sqlalchemy import true
 from app.reports.schema.reports_schema import (
     DashboardStatsResponseSchema, DashboardRevenueResponseSchema, RevenueByDateSchema, 
     ReportParamSchema, OrderTrend, DashBoardOrdersResponseSchema, StatusSummary, CustomerStatsSummery,
     CustomerStatTopCustomers, CustomerStatsResponseSchema, CustomerStatCustomerGrowth,
-    DashboardOrdersResSchema, DashboardOrdersSchema
+    DashboardOrdersResSchema, DashboardOrdersSchema, SalesAnalyticsResSchema, SalesAnalyticsSummerySchema,
+    SalesAnalyticsDailySales 
 )
 
 def get_dashboard_stats_transformer(
@@ -96,3 +98,18 @@ def recent_orders_transformer(data, pagination):
         .model_validate(orders, from_attributes=True).model_dump()
     )
     return resposne_data
+
+
+def analytics_daily_sales_transformer(params:ReportParamSchema, summery, daily_sales):
+    params = params.model_dump(exclude=["pdf"])
+    summery = SalesAnalyticsSummerySchema.model_validate(summery,from_attributes=True).model_dump()
+    daily_sales = [
+        SalesAnalyticsDailySales.model_validate(item, from_attributes=True).model_dump()
+        for item in daily_sales
+    ]
+    response_data = (
+        SalesAnalyticsResSchema.model_validate(
+            {**params, "summery":summery, "daily_sales":daily_sales}
+            ).model_dump()
+    )
+    return response_data

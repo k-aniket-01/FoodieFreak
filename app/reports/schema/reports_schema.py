@@ -85,3 +85,17 @@ class DashboardOrdersSchema(BaseModel):
 class DashboardOrdersResSchema(BaseModel):
     orders : list[DashboardOrdersSchema] = []
     pagination : PaginationResponseSchema = None
+    
+class SalesAnalyticsSummerySchema(BaseModel):
+    total_sales : Optional[int] = None
+    total_orders : Optional[int] = None
+    avg_sale : Optional[int] = None
+    
+class SalesAnalyticsDailySales(BaseModel):
+    a_date : Optional[date | None] = None
+    order_count : Optional[int] = None
+    sale_amount : Optional[int] = None
+
+class SalesAnalyticsResSchema(DateParamResSchema):
+    summery : SalesAnalyticsSummerySchema = {}
+    daily_sales : list[SalesAnalyticsDailySales] = []
