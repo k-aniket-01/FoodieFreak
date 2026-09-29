@@ -21,51 +21,26 @@ def get_dashboard_stats_service(db: Session):
         func.count(Order.id).label("total_orders"),
         func.count(
             case((and_(Order.created_at >= start_day, Order.created_at < next_day), 1))
-        ).label("todays_orders"),
+            ).label("todays_orders"),
         func.count(
-            case(
-                (
-                    ~Order.status.in_(
-                        [OrderStatusEnum.COMPLETED, OrderStatusEnum.CANCELLED]
-                    ),
-                    1,
-                )
-            )
-        ).label("active_orders"),
-        func.count(case((Order.status == OrderStatusEnum.COMPLETED, 1))).label(
-            "completed_orders"
-        ),
-        func.count(case((Order.status == OrderStatusEnum.CANCELLED, 1))).label(
-            "cancelled_orders"
-        ),
+            case((~Order.status.in_([OrderStatusEnum.COMPLETED, OrderStatusEnum.CANCELLED]),1,))
+            ).label("active_orders"),
+        func.count(case((Order.status == OrderStatusEnum.COMPLETED, 1))).label("completed_orders"),
+        func.count(case((Order.status == OrderStatusEnum.CANCELLED, 1))).label("cancelled_orders"),
     ).one()
 
     revenue = db.query(
         func.coalesce(
-            func.sum(
-                case(
-                    (
-                        and_(
-                            Payment.status == PaymentStatusEnum.SUCCESS,
-                            Payment.created_at >= start_day,
-                            Payment.created_at < next_day,
-                        ),
-                        Payment.amount,
-                    ),
-                    else_=0,
-                )
-            ),
-            0,
-        ).label("todays_revenue"),
+            func.sum(case((and_(
+                Payment.status == PaymentStatusEnum.SUCCESS,
+                Payment.created_at >= start_day,
+                Payment.created_at < next_day), Payment.amount,), else_=0,)
+            ),0,).label("todays_revenue"),
         func.coalesce(
-            func.sum(
-                case(
-                    (Payment.status == PaymentStatusEnum.SUCCESS, Payment.amount),
-                    else_=0,
+            func.sum(case(
+                (Payment.status == PaymentStatusEnum.SUCCESS, Payment.amount),else_=0,
                 )
-            ),
-            0,
-        ).label("total_revenue"),
+            ),0,).label("total_revenue"),
     ).one()
 
     total_customers = (
@@ -233,8 +208,9 @@ def analytics_daily_sales_service(db: Session, params: ReportParamSchema):
     summery = db.query(
         func.sum(Order.total_amount).label("total_sales"),
         func.count(Order.id).label("total_orders"),
-        func.sum(Order.total_amount) / func.nullif(func.count(Order.id), 0).label("avg_sale"),
-    )
+        (func.sum(Order.total_amount) // func.nullif(func.count(Order.id), 0)).label("avg_sale"),
+    ).filter(Order.status != OrderStatusEnum.CANCELLED)
+    
     date_series = db.query(
         func.date(
             func.generate_series(params.start_date, params.end_date,"1 day")
