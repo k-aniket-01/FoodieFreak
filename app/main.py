@@ -39,7 +39,10 @@ redis_cache = redis.Redis.from_url(
 )
 
 app.add_middleware(
-    RateLimiterMiddleware, redis_client=redis_cache, limit=5, window=60
+    RateLimiterMiddleware, 
+    redis_client=redis_cache, 
+    limit=int(os.getenv("RATE_LIMIT")), 
+    window=int(os.getenv("RATE_WINDOW"))
 )
 
 @app.get("/", response_class=HTMLResponse)
