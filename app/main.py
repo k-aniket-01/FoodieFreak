@@ -1,15 +1,18 @@
+import os
 from fastapi import FastAPI
+import redis.asyncio as redis
 from fastapi.responses import HTMLResponse 
-from app.authentication.router.authentication_router import auth_router
 from app.user.router.user_router import user_router
+from app.carts.router.carts_router import carts_router
+from app.orders.router.orders_router import orders_router
+from app.reports.router.reports_router import reports_router
+from app.payments.router.payments_router import payment_router
 from app.categories.router.categories_router import categories_router
 from app.food_items.router.food_items_router import food_items_router
 from app.daily_menu.router.daily_menu_router import daily_menu_router
-from app.carts.router.carts_router import carts_router
-from app.orders.router.orders_router import orders_router
-from app.payments.router.payments_router import payment_router
+from app.authentication.router.authentication_router import auth_router
+from app.middlewares.rate_limiter_middleware import RateLimiterMiddleware
 from app.notifications.router.notification_router import notification_router
-from app.reports.router.reports_router import reports_router
 # from test import test_router
 
 
@@ -29,6 +32,15 @@ app = FastAPI(
     }
 )
 #uvicorn app.main:app --reload
+
+redis_cache = redis.Redis.from_url(
+    os.getenv("REDIS_URL"),
+    decode_responses=True
+)
+
+app.add_middleware(
+    RateLimiterMiddleware, redis_client=redis_cache, limit=5, window=60
+)
 
 @app.get("/", response_class=HTMLResponse)
 def root():
